@@ -247,18 +247,25 @@ export default function MenuScreen({ route, navigation }) {
         showsHorizontalScrollIndicator={false}
         style={styles.catTabs}
         contentContainerStyle={styles.catTabsContent}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.catTab, activeCategory === item.id && styles.catTabActive]}
-            onPress={() => setActiveCategory(item.id)}
-          >
-            <Text style={styles.catTabIcon}>{item.icon}</Text>
-            <Text style={[styles.catTabText, activeCategory === item.id && styles.catTabTextActive]}>
-              {item.name}
-            </Text>
-          </TouchableOpacity>
-        )}
+        renderItem={({ item }) => {
+          const isActive = activeCategory === item.id;
+          return (
+            <TouchableOpacity
+              style={[styles.catTab, isActive && styles.catTabActive]}
+              onPress={() => setActiveCategory(item.id)}
+              activeOpacity={0.75}
+            >
+              <Text style={styles.catTabIcon}>{item.icon}</Text>
+              <Text style={[styles.catTabText, isActive && styles.catTabTextActive]}
+                numberOfLines={1}
+              >
+                {item.name}
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
       />
+
 
       {/* Products */}
       {filtered.length === 0 ? (
@@ -320,18 +327,53 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 14, color: Colors.textPrimary },
 
   // Category tabs
-  catTabs: { maxHeight: 58, backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  catTabsContent: { paddingHorizontal: Spacing.sm, alignItems: 'center' },
-  catTab: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
-    borderRadius: Radii.full, marginRight: Spacing.xs, marginVertical: Spacing.sm,
-    backgroundColor: Colors.surfaceSecondary,
+  catTabs: {
+    height: 160,
+    backgroundColor: '#fff',
+    borderBottomWidth: 2,
+    borderBottomColor: '#e8dff0',
   },
-  catTabActive: { backgroundColor: Colors.primary },
-  catTabIcon: { fontSize: 14, marginRight: 4 },
-  catTabText: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary },
-  catTabTextActive: { color: Colors.white },
+  catTabsContent: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  catTab: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#f3eef9',
+    width: 110,
+    height: 110,
+    marginRight: 10,
+    borderWidth: 1.5,
+    borderColor: '#e0d0f0',
+  },
+  catTabActive: {
+    backgroundColor: '#492760',
+    borderColor: '#492760',
+    shadowColor: '#492760',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  catTabIcon: {
+    fontSize: 36,
+    marginBottom: 8,
+  },
+  catTabText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#5a4a6a',
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  catTabTextActive: {
+    color: '#fff',
+  },
 
   // Grid
   grid: { padding: Spacing.base, paddingBottom: 80 },
