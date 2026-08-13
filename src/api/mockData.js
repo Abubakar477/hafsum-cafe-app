@@ -13,6 +13,7 @@ export const CATEGORIES = [
   { id: 'icecream',  name: 'Ice Cream', icon: '🍦' },
   { id: 'smoothies', name: 'Smoothies', icon: '🥭' },
   { id: 'beverages', name: 'Beverages', icon: '🧃' },
+
 ];
 
 // ─── Products ─────────────────────────────────────────────────────────────────
@@ -80,6 +81,22 @@ export const PRODUCTS = [
     addons: [],
   },
   // Cake
+  {
+      id: 'p20', categoryId: 'cake',
+      name: 'Lotus Cupcake', price: 4.20,
+      description: 'Decadent layered chocolate cake with rich ganache frosting — the ultimate indulgence.',
+      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&q=80',
+      popular: true,
+      sizes: [
+        { id: 'slice', label: 'Slice',   price: 4.20 },
+        { id: 'half',  label: 'Half',    price: 18.00 },
+        { id: 'whole', label: 'Whole',   price: 32.00 },
+      ],
+      addons: [
+        { id: 'ice-cream', label: 'Add Ice Cream', price: 1.50 },
+        { id: 'candles',   label: 'Candles',       price: 0.00 },
+      ],
+    },
   {
     id: 'p5', categoryId: 'cake',
     name: 'Chocolate Cake', price: 4.20,

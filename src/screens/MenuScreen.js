@@ -58,7 +58,7 @@ function ProductModal({ product, visible, onClose, onAddToCart }) {
         <View style={styles.modalHandle} />
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <Image source={{ uri: product.image }} style={styles.modalImage} />
+          <Image source={typeof product.image === 'string' ? { uri: product.image } : product.image} style={styles.modalImage} />
 
           <View style={styles.modalContent}>
             <Text style={styles.modalName}>{product.name}</Text>
@@ -153,7 +153,7 @@ function ProductModal({ product, visible, onClose, onAddToCart }) {
 function MenuCard({ item, onPress, onAdd }) {
   return (
     <TouchableOpacity style={styles.menuCard} onPress={() => onPress(item)} activeOpacity={0.88}>
-      <Image source={{ uri: item.image }} style={styles.menuCardImg} />
+      <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.menuCardImg} />
       <View style={styles.menuCardInfo}>
         <Text style={styles.menuCardName} numberOfLines={1}>{item.name}</Text>
         <Text style={styles.menuCardDesc} numberOfLines={2}>{item.description}</Text>

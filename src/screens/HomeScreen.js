@@ -59,7 +59,7 @@ function BannerCarousel({ navigation }) {
                 <Text style={styles.bannerCtaText}>{b.cta}</Text>
               </TouchableOpacity>
             </View>
-            <Image source={{ uri: b.image }} style={styles.bannerImage} />
+            <Image source={typeof b.image === 'string' ? { uri: b.image } : b.image} style={styles.bannerImage} />
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -86,7 +86,7 @@ function ProductCard({ item, onAdd, onPress }) {
 
   return (
     <TouchableOpacity style={styles.productCard} onPress={() => onPress(item)} activeOpacity={0.85}>
-      <Image source={{ uri: item.image }} style={styles.productImg} />
+      <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.productImg} />
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
         <View style={styles.productPriceRow}>

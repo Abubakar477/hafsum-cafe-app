@@ -220,7 +220,7 @@ function ConfirmationModal({ visible, order, onClose }) {
 function CartItem({ item, dispatch }) {
   return (
     <View style={styles.cartItem}>
-      <Image source={{ uri: item.product.image }} style={styles.cartItemImg} />
+      <Image source={typeof item.product.image === 'string' ? { uri: item.product.image } : item.product.image} style={styles.cartItemImg} />
       <View style={styles.cartItemInfo}>
         <Text style={styles.cartItemName} numberOfLines={1}>{item.product.name}</Text>
         {item.size && <Text style={styles.cartItemMeta}>{item.size.label}</Text>}
