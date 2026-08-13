@@ -1,24 +1,30 @@
 {
   "expo": {
-    "name": "hafsum-app",
-    "slug": "hafsum-app",
+    "name": "Hafsum Coffee & Cake",
+    "slug": "hafsum-cafe",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#492760"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.hafsum.cafe"
     },
     "android": {
+      "package": "com.hafsum.cafe",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#492760"
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "apiBaseUrl": "https://api.hafsum.com/v1"
     }
   }
 }
+
