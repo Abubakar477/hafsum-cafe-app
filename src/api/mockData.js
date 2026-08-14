@@ -91,7 +91,7 @@ export const PRODUCTS = [
   // ───────────────────────────── Cheesecakes (Slice / 2.5lb) ────────────────────
   { id: 'ch01', categoryId: 'cheesecakes', name: 'Oreo Chocolate Cheesecake', price: 825,
     description: 'Creamy chocolate cheesecake loaded with crushed Oreo cookies on a chocolate biscuit base.',
-    image: '', popular: true,
+    image: require('../../assets/images/cake_oreo_chocolate.jpg'), popular: true,
     sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], addons: [] },
   { id: 'ch02', categoryId: 'cheesecakes', name: 'Chocolate Truffle Cheesecake', price: 825,
     description: 'Silky cheesecake topped with a glossy chocolate truffle layer for a decadent finish.',
