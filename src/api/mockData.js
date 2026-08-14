@@ -53,15 +53,15 @@ export const PRODUCTS = [
     sizes: [{ id: '1.5lb', label: '1.5 lb', price: 2199 }, { id: '2.5lb', label: '2.5 lb', price: 3200 }], addons: [] },
   { id: 'c05', categoryId: 'cakes', name: 'Chocolate Dream Mousse Cake', price: 2250,
     description: 'Airy chocolate mousse layered over a soft cocoa sponge for a light yet deeply chocolatey bite.',
-    image: '', popular: false,
+    image: require('../../assets/images/cake_chocolate_mousse.jpg'), popular: false,
     sizes: [{ id: '1.5lb', label: '1.5 lb', price: 2250 }, { id: '2.5lb', label: '2.5 lb', price: 3200 }], addons: [] },
   { id: 'c06', categoryId: 'cakes', name: 'Three Milk Cake', price: 1999,
     description: 'The original tres leches — sponge soaked in a trio of milks, topped with a light whipped cream.',
-    image: '', popular: false,
+    image: require('../../assets/images/cake_snicker_bar.jpg'), popular: false,
     sizes: [{ id: '1.5lb', label: '1.5 lb', price: 1999 }, { id: '2.5lb', label: '2.5 lb', price: 2999 }], addons: [] },
   { id: 'c07', categoryId: 'cakes', name: 'Snicker Bar Chocolate Cake', price: 1999,
     description: 'Chocolate sponge loaded with caramel, peanuts and chocolate drizzle for a Snickers-inspired treat.',
-    image: '', popular: true,
+    image: require('../../assets/images/cake_chocolate_rosette.jpg'), popular: true,
     sizes: [{ id: '1.5lb', label: '1.5 lb', price: 1999 }, { id: '2.5lb', label: '2.5 lb', price: 3400 }], addons: [] },
   { id: 'c08', categoryId: 'cakes', name: 'Salted Caramel Cake', price: 2199,
     description: 'Buttery caramel cream and a hint of sea salt layered over a soft vanilla-chocolate sponge.',
@@ -85,7 +85,7 @@ export const PRODUCTS = [
     sizes: [{ id: '1.5lb', label: '1.5 lb', price: 1999 }, { id: '2.5lb', label: '2.5 lb', price: 2999 }], addons: [] },
   { id: 'c13', categoryId: 'cakes', name: 'Coffee Cake', price: 1999,
     description: 'Light coffee-infused sponge layered with a smooth coffee buttercream.',
-    image: '', popular: false,
+    image: require('../../assets/images/cake_coffee.jpg'), popular: false,
     sizes: [{ id: '1.5lb', label: '1.5 lb', price: 1999 }, { id: '2.5lb', label: '2.5 lb', price: 2999 }], addons: [] },
 
   // ───────────────────────────── Cheesecakes (Slice / 2.5lb) ────────────────────
@@ -107,7 +107,7 @@ export const PRODUCTS = [
     sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], addons: [] },
   { id: 'ch05', categoryId: 'cheesecakes', name: 'Blueberry Cheesecake', price: 825,
     description: 'Smooth vanilla cheesecake swirled and topped with a tangy blueberry compote.',
-    image: '', popular: false,
+    image: require('../../assets/images/cake_blueberry_cheesecake.jpg'), popular: false,
     sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], addons: [] },
 
   // ───────────────────────────── Specialty Cakes (2 lb) ─────────────────────────
