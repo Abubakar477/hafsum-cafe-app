@@ -81,8 +81,8 @@ export function CartProvider({ children }) {
   }, [state.items]);
 
   const subtotal = state.items.reduce((s, i) => s + i.unitPrice * i.qty, 0);
-  const deliveryFee = 2.00;
-  const total = Math.max(0, subtotal - state.discount) + deliveryFee;
+  const deliveryFee = 200; // Rs. 200 delivery fee
+  const total = Math.max(0, subtotal - state.discount) + (subtotal > 0 ? deliveryFee : 0);
   const itemCount = state.items.reduce((s, i) => s + i.qty, 0);
 
   return (

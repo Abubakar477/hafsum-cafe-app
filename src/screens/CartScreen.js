@@ -15,7 +15,6 @@ const PAYMENT_METHODS = [
   { id: 'cod',    label: 'Cash on Delivery / Pickup', icon: '💵' },
   { id: 'card',   label: 'Credit / Debit Card',        icon: '💳' },
   { id: 'apple',  label: 'Apple Pay',                   icon: '🍎' },
-  { id: 'stcpay', label: 'STC Pay',                     icon: '📱' },
 ];
 
 // ─── Checkout Modal ───────────────────────────────────────────────────────────
@@ -70,11 +69,11 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
 
           {/* Customer details */}
           <Text style={styles.section}>Your Details</Text>
-          <Field label="Full Name *" value={name} onChangeText={setName} placeholder="e.g. Ahmed Al-Rashid" />
-          <Field label="Mobile Number *" value={phone} onChangeText={setPhone} placeholder="+966 5X XXX XXXX" keyboardType="phone-pad" />
+          <Field label="Full Name *" value={name} onChangeText={setName} placeholder="e.g. Ali Ahmed" />
+          <Field label="Mobile Number *" value={phone} onChangeText={setPhone} placeholder="03XX XXXXXXX" keyboardType="phone-pad" />
 
           {type === 'delivery' && (
-            <Field label="Delivery Address *" value={address} onChangeText={setAddress} placeholder="Street, District, City" multiline />
+            <Field label="Delivery Address *" value={address} onChangeText={setAddress} placeholder="Street, Phase, Area" multiline />
           )}
 
           {type === 'pickup' && (
@@ -120,13 +119,13 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
           {/* Summary */}
           <Text style={styles.section}>Order Summary</Text>
           <View style={styles.summaryCard}>
-            <SummaryRow label="Subtotal" value={`$${(total - (type === 'delivery' ? deliveryFee : 0)).toFixed(2)}`} />
-            {type === 'delivery' && <SummaryRow label="Delivery Fee" value={`$${deliveryFee.toFixed(2)}`} />}
+            <SummaryRow label="Subtotal" value={`Rs. ${(total - (type === 'delivery' ? deliveryFee : 0)).toLocaleString()}`} />
+            {type === 'delivery' && <SummaryRow label="Delivery Fee" value={`Rs. ${deliveryFee.toLocaleString()}`} />}
             {type === 'pickup' && <SummaryRow label="Delivery Fee" value="FREE" accent />}
             <View style={styles.summaryDivider} />
             <SummaryRow
               label="Total"
-              value={`$${type === 'delivery' ? total.toFixed(2) : (total - deliveryFee).toFixed(2)}`}
+              value={`Rs. ${type === 'delivery' ? total.toLocaleString() : (total - deliveryFee).toLocaleString()}`}
               bold
             />
           </View>
@@ -142,7 +141,7 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
             disabled={!valid}
           >
             <Text style={styles.confirmText}>
-              Place Order · ${type === 'delivery' ? total.toFixed(2) : (total - deliveryFee).toFixed(2)}
+              Place Order · Rs. {type === 'delivery' ? total.toLocaleString() : (total - deliveryFee).toLocaleString()}
             </Text>
           </TouchableOpacity>
         </View>
@@ -227,7 +226,7 @@ function CartItem({ item, dispatch }) {
         {item.addons?.length > 0 && (
           <Text style={styles.cartItemMeta}>{item.addons.map(a => a.label).join(', ')}</Text>
         )}
-        <Text style={styles.cartItemPrice}>${(item.unitPrice * item.qty).toFixed(2)}</Text>
+        <Text style={styles.cartItemPrice}>Rs. {(item.unitPrice * item.qty).toLocaleString()}</Text>
       </View>
       <View style={styles.cartQty}>
         <TouchableOpacity
@@ -340,10 +339,10 @@ export default function CartScreen({ navigation }) {
 
             {/* Totals */}
             <View style={styles.totalsCard}>
-              <SummaryRow label="Subtotal" value={`$${subtotal.toFixed(2)}`} />
-              <SummaryRow label="Delivery Fee" value={`$${deliveryFee.toFixed(2)}`} />
+              <SummaryRow label="Subtotal" value={`Rs. ${subtotal.toLocaleString()}`} />
+              <SummaryRow label="Delivery Fee" value={`Rs. ${deliveryFee.toLocaleString()}`} />
               <View style={styles.summaryDivider} />
-              <SummaryRow label="Total" value={`$${total.toFixed(2)}`} bold />
+              <SummaryRow label="Total" value={`Rs. ${total.toLocaleString()}`} bold />
             </View>
           </View>
         )}
@@ -352,7 +351,7 @@ export default function CartScreen({ navigation }) {
       {/* Checkout button */}
       <View style={styles.checkoutBar}>
         <TouchableOpacity style={styles.checkoutBtn} onPress={() => setCheckoutVisible(true)}>
-          <Text style={styles.checkoutBtnText}>Proceed to Checkout · ${total.toFixed(2)}</Text>
+          <Text style={styles.checkoutBtnText}>Proceed to Checkout · Rs. {total.toLocaleString()}</Text>
           <Ionicons name="arrow-forward" size={20} color={Colors.white} />
         </TouchableOpacity>
       </View>

@@ -107,7 +107,7 @@ function OrderDetailModal({ order, visible, onClose }) {
                   <Text style={styles.orderItemQty}>{item.qty}x</Text>
                 </View>
                 <Text style={styles.orderItemName}>{item.name}</Text>
-                <Text style={styles.orderItemPrice}>${(item.price * item.qty).toFixed(2)}</Text>
+                <Text style={styles.orderItemPrice}>Rs. {item.price.toLocaleString()}</Text>
               </View>
             ))}
           </View>
@@ -115,13 +115,13 @@ function OrderDetailModal({ order, visible, onClose }) {
           {/* Summary */}
           <View style={styles.detailCard}>
             <Text style={styles.detailSection}>Payment Summary</Text>
-            <DetailRow label="Subtotal" value={`$${order.subtotal.toFixed(2)}`} />
+            <DetailRow label="Subtotal" value={`Rs. ${order.subtotal.toLocaleString()}`} />
             <DetailRow
               label="Delivery Fee"
-              value={order.deliveryFee === 0 ? 'FREE' : `$${order.deliveryFee.toFixed(2)}`}
+              value={order.deliveryFee === 0 ? 'FREE' : `Rs. ${order.deliveryFee.toLocaleString()}`}
             />
             <View style={styles.detailDivider} />
-            <DetailRow label="Total" value={`$${order.total.toFixed(2)}`} bold />
+            <DetailRow label="Total" value={`Rs. ${order.total.toLocaleString()}`} bold />
           </View>
 
           {/* Delivery info */}
@@ -179,7 +179,7 @@ function OrderCard({ order, onPress }) {
           />
           <Text style={styles.orderType}>{order.type === 'delivery' ? 'Delivery' : 'Pickup'}</Text>
         </View>
-        <Text style={styles.orderTotal}>${order.total.toFixed(2)}</Text>
+        <Text style={styles.orderTotal}>Rs. {order.total.toLocaleString()}</Text>
       </View>
     </TouchableOpacity>
   );

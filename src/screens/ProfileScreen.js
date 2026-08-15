@@ -82,7 +82,7 @@ function AuthModal({ visible, onClose, onSignIn }) {
                 {mode === 'signup' && (
                   <AuthField label="Full Name" value={name} onChangeText={setName} placeholder="Your name" />
                 )}
-                <AuthField label="Phone Number" value={phone} onChangeText={setPhone} placeholder="+966 5X XXX XXXX" keyboardType="phone-pad" />
+                <AuthField label="Phone Number" value={phone} onChangeText={setPhone} placeholder="03XX XXXXXXX" keyboardType="phone-pad" />
                 {mode === 'signup' && (
                   <AuthField label="Email Address" value={email} onChangeText={setEmail} placeholder="email@example.com" keyboardType="email-address" />
                 )}
@@ -230,7 +230,7 @@ export default function ProfileScreen({ navigation }) {
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                  <Text style={styles.statValue}>${totalSpend.toFixed(0)}</Text>
+                  <Text style={styles.statValue}>Rs. {totalSpend.toLocaleString()}</Text>
                   <Text style={styles.statLabel}>Total Spent</Text>
                 </View>
               </View>

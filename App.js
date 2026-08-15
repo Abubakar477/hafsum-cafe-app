@@ -1,44 +1,45 @@
-// ─── App.js ───────────────────────────────────────────────────────────────────
+import 'react-native-gesture-handler';
 import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { CartProvider } from './src/context/CartContext';
 import { AuthProvider } from './src/context/AuthContext';
+import { CartProvider } from './src/context/CartContext';
 import { OrdersProvider } from './src/context/OrdersContext';
-import SplashScreen from './src/screens/SplashScreen';
+import { FavoritesProvider } from './src/context/FavoritesContext';
 import MainNavigator from './src/navigation/MainNavigator';
+import SplashScreen from './src/screens/SplashScreen';
 
+/**
+ * Hafsum Coffee App - Main Entry Point
+ */
 export default function App() {
-  const [splashDone, setSplashDone] = useState(false);
+  const [isSplashFinished, setIsSplashFinished] = useState(false);
 
-  if (!splashDone) {
+  // Show Splash Screen first
+  if (!isSplashFinished) {
     return (
-      <GestureHandlerRootView style={styles.root}>
-        <StatusBar style="light" />
-        <SplashScreen onFinish={() => setSplashDone(true)} />
-      </GestureHandlerRootView>
+      <SplashScreen onFinish={() => setIsSplashFinished(true)} />
     );
   }
 
+  // Main App content with all necessary global states
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <AuthProvider>
-        <CartProvider>
-          <OrdersProvider>
-            <NavigationContainer>
-              <StatusBar style="light" />
-              <MainNavigator />
-            </NavigationContainer>
-          </OrdersProvider>
-        </CartProvider>
-      </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <FavoritesProvider>
+            <OrdersProvider>
+              <CartProvider>
+                <NavigationContainer>
+                  <MainNavigator />
+                </NavigationContainer>
+              </CartProvider>
+            </OrdersProvider>
+          </FavoritesProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1 },
-});
