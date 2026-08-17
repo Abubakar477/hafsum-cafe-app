@@ -8,6 +8,7 @@ import { AuthProvider } from './src/context/AuthContext';
 import { CartProvider } from './src/context/CartContext';
 import { OrdersProvider } from './src/context/OrdersContext';
 import { FavoritesProvider } from './src/context/FavoritesContext';
+import { ToastProvider } from './src/components/ToastNotification';
 import MainNavigator from './src/navigation/MainNavigator';
 import SplashScreen from './src/screens/SplashScreen';
 
@@ -32,9 +33,11 @@ export default function App() {
           <FavoritesProvider>
             <OrdersProvider>
               <CartProvider>
-                <NavigationContainer>
-                  <MainNavigator />
-                </NavigationContainer>
+                <ToastProvider>
+                  <NavigationContainer>
+                    <MainNavigator />
+                  </NavigationContainer>
+                </ToastProvider>
               </CartProvider>
             </OrdersProvider>
           </FavoritesProvider>

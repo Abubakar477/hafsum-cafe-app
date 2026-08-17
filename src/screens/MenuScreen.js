@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Shadows } from '../theme';
 import { PRODUCTS, CATEGORIES } from '../api/mockData';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../components/ToastNotification';
 
 const { width } = Dimensions.get('window');
 
@@ -47,6 +48,7 @@ function MenuCard({ item, onAdd }) {
 export default function MenuScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { dispatch } = useCart();
+  const { showToast } = useToast();
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
 
@@ -58,6 +60,7 @@ export default function MenuScreen({ navigation }) {
 
   const handleQuickAdd = (product) => {
     dispatch({ type: 'ADD', payload: { product, qty: 1 } });
+    showToast(`✓ ${product.name} added to cart!`);
   };
 
   return (
