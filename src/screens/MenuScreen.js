@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, Image,
-  TextInput, Dimensions, StatusBar, SafeAreaView,
+  TextInput, Dimensions, StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Shadows } from '../theme';
 import { PRODUCTS, CATEGORIES } from '../api/mockData';
 import { useCart } from '../context/CartContext';
@@ -44,11 +45,11 @@ function MenuCard({ item, onAdd }) {
 
 // ── MenuScreen ────────────────────────────────────────────────────────────────
 export default function MenuScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { dispatch } = useCart();
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
 
-  // Includes ALL products (specials + regular menu items)
   const filtered = PRODUCTS.filter(p => {
     const matchCat = activeCategory === 'all' || p.categoryId === activeCategory;
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -63,38 +64,34 @@ export default function MenuScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Header */}
+      {/* HEADER - Standardized with Home */}
       <View style={styles.header}>
         <LinearGradient
           colors={['#2E1540', '#492760']}
-          style={styles.headerGradient}
+          style={[styles.headerGradient, { paddingTop: insets.top + 15 }]}
         >
-          <SafeAreaView>
-            <View style={styles.headerTopRow}>
-              <Text style={styles.headerTitle}>Our Menu</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
-                <View style={styles.bagIconWrap}>
-                  <Ionicons name="bag-outline" size={24} color={WHITE} />
-                </View>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.headerTopRow}>
+            <Text style={styles.headerTitle}>Our Menu</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
+              <View style={styles.bagIconWrap}>
+                <Ionicons name="bag-outline" size={24} color={WHITE} />
+              </View>
+            </TouchableOpacity>
+          </View>
 
-            {/* Search */}
-            <View style={styles.searchWrap}>
-              <Ionicons name="search" size={20} color={MUTED} style={styles.searchIcon} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search products..."
-                placeholderTextColor={MUTED}
-                value={search}
-                onChangeText={setSearch}
-              />
-            </View>
-          </SafeAreaView>
+          <View style={styles.searchWrap}>
+            <Ionicons name="search" size={20} color={MUTED} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search products..."
+              placeholderTextColor={MUTED}
+              value={search}
+              onChangeText={setSearch}
+            />
+          </View>
         </LinearGradient>
       </View>
 
-      {/* Category Tabs */}
       <View style={styles.catTabsContainer}>
         <FlatList
           data={CATEGORIES}
@@ -122,13 +119,11 @@ export default function MenuScreen({ navigation }) {
         />
       </View>
 
-
-      {/* Products Grid */}
       <FlatList
         data={filtered}
         keyExtractor={i => i.id}
         numColumns={2}
-        contentContainerStyle={styles.grid}
+        contentContainerStyle={[styles.grid, { paddingBottom: 100 + insets.bottom }]}
         columnWrapperStyle={styles.gridRow}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
@@ -148,14 +143,12 @@ const CARD_W = (width - 48) / 2;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f4fb' },
-
   header: {
     overflow: 'hidden',
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
   headerGradient: {
-    paddingTop: 10,
     paddingHorizontal: 20,
     paddingBottom: 25,
   },
@@ -191,17 +184,13 @@ const styles = StyleSheet.create({
   },
   searchIcon: { marginRight: 10 },
   searchInput: { flex: 1, fontSize: 16, color: TEXT },
-
-  // Category Tabs
   catTabsContainer: {
     backgroundColor: WHITE,
     paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#f0e8f8',
   },
-  catTabsContent: {
-    paddingHorizontal: 15,
-  },
+  catTabsContent: { paddingHorizontal: 15 },
   catTab: {
     alignItems: 'center',
     width: 85,
@@ -213,10 +202,7 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
     ...Shadows.sm,
   },
-  catTabActive: {
-    backgroundColor: PRIMARY,
-    borderColor: PRIMARY,
-  },
+  catTabActive: { backgroundColor: PRIMARY, borderColor: PRIMARY },
   catIconWrap: {
     width: 46,
     height: 46,
@@ -226,26 +212,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  catIconWrapActive: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-  },
-  catIcon: {
-    fontSize: 22,
-  },
-  catTabText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: TEXT,
-  },
-  catTabTextActive: {
-    color: WHITE,
-  },
-
-  // Grid
-  grid: { padding: 16, paddingBottom: 100 },
+  catIconWrapActive: { backgroundColor: 'rgba(255,255,255,0.2)' },
+  catIcon: { fontSize: 22 },
+  catTabText: { fontSize: 11, fontWeight: '700', color: TEXT },
+  catTabTextActive: { color: WHITE },
+  grid: { padding: 16 },
   gridRow: { justifyContent: 'space-between' },
-
-  // Menu Card
   menuCard: {
     width: CARD_W,
     backgroundColor: WHITE,
@@ -268,7 +240,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   empty: { flex: 1, alignItems: 'center', padding: 40 },
   emptyText: { color: MUTED, fontSize: 16 },
 });

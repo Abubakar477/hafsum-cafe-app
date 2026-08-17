@@ -2,20 +2,21 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  Modal, ScrollView, StatusBar, SafeAreaView,
+  Modal, ScrollView, StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radii, Shadows } from '../theme';
 import { useOrders } from '../context/OrdersContext';
 
 const STATUS_CONFIG = {
-  received:   { label: 'Order Received',       color: Colors.statusReceived,   icon: 'checkmark-circle',      step: 0 },
-  confirmed:  { label: 'Order Confirmed',       color: Colors.statusConfirmed,  icon: 'thumbs-up',             step: 1 },
-  preparing:  { label: 'Preparing',             color: Colors.statusPreparing,  icon: 'flame',                 step: 2 },
-  ready:      { label: 'Ready / Out for Delivery', color: Colors.statusReady,   icon: 'bicycle',               step: 3 },
-  completed:  { label: 'Completed',             color: Colors.statusCompleted,  icon: 'bag-check',             step: 4 },
-  cancelled:  { label: 'Cancelled',             color: Colors.statusCancelled,  icon: 'close-circle',          step: -1 },
+  received:   { label: 'Received',       color: Colors.statusReceived,   icon: 'checkmark-circle',      step: 0 },
+  confirmed:  { label: 'Confirmed',      color: Colors.statusConfirmed,  icon: 'thumbs-up',             step: 1 },
+  preparing:  { label: 'Preparing',      color: Colors.statusPreparing,  icon: 'flame',                 step: 2 },
+  ready:      { label: 'Ready',          color: Colors.statusReady,      icon: 'bicycle',               step: 3 },
+  completed:  { label: 'Completed',      color: Colors.statusCompleted,  icon: 'bag-check',             step: 4 },
+  cancelled:  { label: 'Cancelled',      color: Colors.statusCancelled,  icon: 'close-circle',          step: -1 },
 };
 
 const STATUS_STEPS = ['received', 'confirmed', 'preparing', 'ready', 'completed'];
@@ -31,14 +32,14 @@ function formatDate(iso) {
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.received;
   return (
-    <View style={[styles.badge, { backgroundColor: cfg.color + '22', borderColor: cfg.color }]}>
-      <Ionicons name={cfg.icon} size={12} color={cfg.color} style={{ marginRight: 4 }} />
+    <View style={[styles.badge, { backgroundColor: cfg.color + '15', borderColor: cfg.color }]}>
+      <Ionicons name={cfg.icon} size={14} color={cfg.color} style={{ marginRight: 6 }} />
       <Text style={[styles.badgeText, { color: cfg.color }]}>{cfg.label}</Text>
     </View>
   );
 }
 
-// ─── Order Progress Bar ───────────────────────────────────────────────────────
+// ─── Order Progress Bar (used in Detail Modal) ────────────────────────────────
 function OrderProgress({ status }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.received;
   const currentStep = cfg.step;
@@ -70,35 +71,34 @@ function OrderProgress({ status }) {
 
 // ─── Order Detail Modal ───────────────────────────────────────────────────────
 function OrderDetailModal({ order, visible, onClose }) {
+  const insets = useSafeAreaInsets();
   if (!order) return null;
-  const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.received;
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.detailContainer}>
         <StatusBar barStyle="light-content" />
-        <LinearGradient colors={[Colors.primaryDark, Colors.primary]} style={styles.detailHeader}>
-          <SafeAreaView>
-            <View style={styles.detailHeaderRow}>
-              <TouchableOpacity onPress={onClose}>
-                <Ionicons name="arrow-back" size={24} color={Colors.white} />
-              </TouchableOpacity>
-              <Text style={styles.detailHeaderTitle}>Order Details</Text>
-              <View style={{ width: 24 }} />
-            </View>
-            <Text style={styles.detailOrderId}>{order.id}</Text>
-            <Text style={styles.detailDate}>{formatDate(order.date)}</Text>
-          </SafeAreaView>
+        <LinearGradient 
+          colors={[Colors.primaryDark, Colors.primary]} 
+          style={[styles.detailHeader, { paddingTop: insets.top + 15 }]}
+        >
+          <View style={styles.detailHeaderRow}>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="arrow-back" size={24} color={Colors.white} />
+            </TouchableOpacity>
+            <Text style={styles.detailHeaderTitle}>Order Details</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          <Text style={styles.detailOrderId}>{order.id}</Text>
+          <Text style={styles.detailDate}>{formatDate(order.date)}</Text>
         </LinearGradient>
 
         <ScrollView style={styles.detailScroll} showsVerticalScrollIndicator={false}>
-          {/* Status */}
           <View style={styles.detailCard}>
             <Text style={styles.detailSection}>Order Status</Text>
             <StatusBadge status={order.status} />
             <OrderProgress status={order.status} />
           </View>
 
-          {/* Items */}
           <View style={styles.detailCard}>
             <Text style={styles.detailSection}>Items Ordered</Text>
             {order.items.map((item, i) => (
@@ -112,7 +112,6 @@ function OrderDetailModal({ order, visible, onClose }) {
             ))}
           </View>
 
-          {/* Summary */}
           <View style={styles.detailCard}>
             <Text style={styles.detailSection}>Payment Summary</Text>
             <DetailRow label="Subtotal" value={`Rs. ${order.subtotal.toLocaleString()}`} />
@@ -124,7 +123,6 @@ function OrderDetailModal({ order, visible, onClose }) {
             <DetailRow label="Total" value={`Rs. ${order.total.toLocaleString()}`} bold />
           </View>
 
-          {/* Delivery info */}
           {order.type === 'delivery' && order.address && (
             <View style={styles.detailCard}>
               <Text style={styles.detailSection}>Delivery Address</Text>
@@ -134,8 +132,7 @@ function OrderDetailModal({ order, visible, onClose }) {
               </View>
             </View>
           )}
-
-          <View style={{ height: 40 }} />
+          <View style={{ height: 40 + insets.bottom }} />
         </ScrollView>
       </View>
     </Modal>
@@ -151,30 +148,28 @@ function DetailRow({ label, value, bold }) {
   );
 }
 
-// ─── Order Card ───────────────────────────────────────────────────────────────
+// ─── Order Card (Redesigned to match request) ────────────────────────────────
 function OrderCard({ order, onPress }) {
-  const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.received;
   return (
-    <TouchableOpacity style={styles.orderCard} onPress={() => onPress(order)} activeOpacity={0.88}>
-      <View style={styles.orderCardTop}>
-        <View>
-          <Text style={styles.orderId}>{order.id}</Text>
-          <Text style={styles.orderDate}>{formatDate(order.date)}</Text>
-        </View>
+    <TouchableOpacity style={styles.orderCard} onPress={() => onPress(order)} activeOpacity={0.9}>
+      <View style={styles.orderCardHeader}>
+        <Text style={styles.orderId}>{order.id}</Text>
         <StatusBadge status={order.status} />
       </View>
-
-      <View style={styles.orderCardMid}>
+      
+      <Text style={styles.orderDate}>{formatDate(order.date)}</Text>
+      
+      <View style={styles.orderItemsContainer}>
         <Text style={styles.orderItems} numberOfLines={2}>
           {order.items.map(i => `${i.qty}x ${i.name}`).join(' · ')}
         </Text>
       </View>
 
-      <View style={styles.orderCardBottom}>
+      <View style={styles.orderCardFooter}>
         <View style={styles.orderTypeRow}>
           <Ionicons
             name={order.type === 'delivery' ? 'bicycle-outline' : 'storefront-outline'}
-            size={14}
+            size={18}
             color={Colors.textMuted}
           />
           <Text style={styles.orderType}>{order.type === 'delivery' ? 'Delivery' : 'Pickup'}</Text>
@@ -187,6 +182,7 @@ function OrderCard({ order, onPress }) {
 
 // ─── Orders Screen ────────────────────────────────────────────────────────────
 export default function OrdersScreen() {
+  const insets = useSafeAreaInsets();
   const { orders } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [detailVisible, setDetailVisible] = useState(false);
@@ -194,14 +190,23 @@ export default function OrdersScreen() {
   const openOrder = (order) => { setSelectedOrder(order); setDetailVisible(true); };
   const closeDetail = () => setDetailVisible(false);
 
+  const TAB_BAR_HEIGHT = 70 + (insets.bottom > 0 ? insets.bottom - 10 : 0);
+
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primaryDark} />
-      <LinearGradient colors={[Colors.primaryDark, Colors.primary]} style={styles.header}>
-        <SafeAreaView>
-          <Text style={styles.headerTitle}>My Orders</Text>
-          <Text style={styles.headerSub}>{orders.length} order{orders.length !== 1 ? 's' : ''}</Text>
-        </SafeAreaView>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      
+      {/* HEADER - Standardized with other tabs */}
+      <LinearGradient 
+        colors={[Colors.primaryDark, Colors.primary]} 
+        style={[styles.header, { paddingTop: insets.top + 15 }]}
+      >
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.headerTitle}>My Orders</Text>
+            <Text style={styles.headerSub}>{orders.length} order{orders.length !== 1 ? 's' : ''}</Text>
+          </View>
+        </View>
       </LinearGradient>
 
       {orders.length === 0 ? (
@@ -214,7 +219,7 @@ export default function OrdersScreen() {
         <FlatList
           data={orders}
           keyExtractor={o => o.id}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: TAB_BAR_HEIGHT + 20 }]}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <OrderCard order={item} onPress={openOrder} />}
         />
@@ -232,43 +237,92 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.offWhite },
   header: {
-    paddingTop: 52, paddingHorizontal: Spacing.base, paddingBottom: Spacing.lg,
-    borderBottomLeftRadius: 20, borderBottomRightRadius: 20,
+    paddingHorizontal: 20, paddingBottom: 25,
+    borderBottomLeftRadius: 30, borderBottomRightRadius: 30,
   },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   headerTitle: { fontSize: 22, fontWeight: '800', color: Colors.white },
-  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.65)', marginTop: 2 },
+  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 2, fontWeight: '500' },
 
-  // Empty
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.xxl },
   emptyIcon: { fontSize: 64, marginBottom: Spacing.lg },
   emptyText: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 6 },
   emptySubText: { fontSize: 14, color: Colors.textSecondary, textAlign: 'center' },
 
-  // List
-  list: { padding: Spacing.base, paddingBottom: 80 },
+  list: { padding: Spacing.base },
 
-  // Order Card
+  // Updated Order Card
   orderCard: {
-    backgroundColor: Colors.white, borderRadius: Radii.lg,
-    padding: Spacing.base, marginBottom: Spacing.md, ...Shadows.sm,
+    backgroundColor: Colors.white,
+    borderRadius: Radii.lg,
+    padding: Spacing.base,
+    marginBottom: Spacing.md,
+    ...Shadows.md,
   },
-  orderCardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: Spacing.sm },
-  orderId: { fontSize: 15, fontWeight: '800', color: Colors.primary },
-  orderDate: { fontSize: 12, color: Colors.textMuted, marginTop: 2 },
-  badge: {
-    flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1, borderRadius: Radii.full,
-    paddingVertical: 3, paddingHorizontal: 8,
+  orderCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
   },
-  badgeText: { fontSize: 11, fontWeight: '700' },
-  orderCardMid: { marginBottom: Spacing.sm },
-  orderItems: { fontSize: 13, color: Colors.textSecondary, lineHeight: 19 },
-  orderCardBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  orderTypeRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  orderType: { fontSize: 12, color: Colors.textMuted },
-  orderTotal: { fontSize: 16, fontWeight: '800', color: Colors.textPrimary },
+  orderId: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: Colors.primaryDark,
+  },
+  orderDate: {
+    fontSize: 13,
+    color: Colors.textMuted,
+    marginBottom: Spacing.md,
+  },
+  orderItemsContainer: {
+    marginBottom: Spacing.lg,
+  },
+  orderItems: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  orderCardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: Colors.surfaceSecondary,
+    paddingTop: Spacing.md,
+  },
+  orderTypeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  orderType: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
+  orderTotal: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
 
-  // Progress
+  // Badge
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: Radii.full,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  // Progress (Detail)
   progressWrap: {
     flexDirection: 'row', alignItems: 'flex-start',
     marginTop: Spacing.md, paddingHorizontal: Spacing.xs,
@@ -285,7 +339,7 @@ const styles = StyleSheet.create({
   // Detail Modal
   detailContainer: { flex: 1, backgroundColor: Colors.offWhite },
   detailHeader: {
-    paddingTop: 52, paddingHorizontal: Spacing.base, paddingBottom: Spacing.lg,
+    paddingHorizontal: 20, paddingBottom: 25,
   },
   detailHeaderRow: {
     flexDirection: 'row', alignItems: 'center',

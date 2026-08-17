@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, Image,
-  TextInput, Modal, ScrollView, StatusBar, SafeAreaView,
+  TextInput, Modal, ScrollView, StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radii, Shadows } from '../theme';
 import { useCart } from '../context/CartContext';
 import { useOrders } from '../context/OrdersContext';
@@ -19,11 +20,12 @@ const PAYMENT_METHODS = [
 
 // ─── Checkout Modal ───────────────────────────────────────────────────────────
 function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
+  const insets = useSafeAreaInsets();
   const [name, setName]           = useState('');
   const [phone, setPhone]         = useState('');
   const [address, setAddress]     = useState('');
   const [notes, setNotes]         = useState('');
-  const [type, setType]           = useState('delivery'); // 'delivery' | 'pickup'
+  const [type, setType]           = useState('delivery'); 
   const [payment, setPayment]     = useState('cod');
   const [branch, setBranch]       = useState(BRANCHES[0].id);
 
@@ -33,20 +35,20 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.checkoutContainer}>
         <StatusBar barStyle="light-content" />
-        <LinearGradient colors={[Colors.primaryDark, Colors.primary]} style={styles.checkoutHeader}>
-          <SafeAreaView>
-            <View style={styles.checkoutHeaderRow}>
-              <TouchableOpacity onPress={onClose}>
-                <Ionicons name="arrow-back" size={24} color={Colors.white} />
-              </TouchableOpacity>
-              <Text style={styles.checkoutTitle}>Checkout</Text>
-              <View style={{ width: 24 }} />
-            </View>
-          </SafeAreaView>
+        <LinearGradient 
+          colors={[Colors.primaryDark, Colors.primary]} 
+          style={[styles.header, { paddingTop: insets.top + 15 }]}
+        >
+          <View style={styles.headerRow}>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="arrow-back" size={24} color={Colors.white} />
+            </TouchableOpacity>
+            <Text style={styles.checkoutTitle}>Checkout</Text>
+            <View style={{ width: 24 }} />
+          </View>
         </LinearGradient>
 
         <ScrollView style={styles.checkoutScroll} showsVerticalScrollIndicator={false}>
-          {/* Delivery / Pickup toggle */}
           <Text style={styles.section}>Order Type</Text>
           <View style={styles.toggleRow}>
             {['delivery', 'pickup'].map(t => (
@@ -67,7 +69,6 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
             ))}
           </View>
 
-          {/* Customer details */}
           <Text style={styles.section}>Your Details</Text>
           <Field label="Full Name *" value={name} onChangeText={setName} placeholder="e.g. Ali Ahmed" />
           <Field label="Mobile Number *" value={phone} onChangeText={setPhone} placeholder="03XX XXXXXXX" keyboardType="phone-pad" />
@@ -91,7 +92,6 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.branchName}>{b.name}</Text>
                     <Text style={styles.branchAddr}>{b.address}</Text>
-                    <Text style={styles.branchHours}>{b.hours}</Text>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -100,7 +100,6 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
 
           <Field label="Order Notes (optional)" value={notes} onChangeText={setNotes} placeholder="Any special requests?" multiline />
 
-          {/* Payment */}
           <Text style={styles.section}>Payment Method</Text>
           {PAYMENT_METHODS.map(pm => (
             <TouchableOpacity
@@ -110,13 +109,9 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
             >
               <Text style={styles.payIcon}>{pm.icon}</Text>
               <Text style={[styles.payLabel, payment === pm.id && styles.payLabelActive]}>{pm.label}</Text>
-              <View style={[styles.radio, payment === pm.id && styles.radioActive]}>
-                {payment === pm.id && <View style={styles.radioDot} />}
-              </View>
             </TouchableOpacity>
           ))}
 
-          {/* Summary */}
           <Text style={styles.section}>Order Summary</Text>
           <View style={styles.summaryCard}>
             <SummaryRow label="Subtotal" value={`Rs. ${(total - (type === 'delivery' ? deliveryFee : 0)).toLocaleString()}`} />
@@ -129,12 +124,10 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
               bold
             />
           </View>
-
           <View style={{ height: 100 }} />
         </ScrollView>
 
-        {/* CTA */}
-        <View style={styles.checkoutFooter}>
+        <View style={[styles.checkoutFooter, { paddingBottom: Math.max(insets.bottom, Spacing.base) }]}>
           <TouchableOpacity
             style={[styles.confirmBtn, !valid && styles.confirmBtnDisabled]}
             onPress={() => valid && onConfirm({ name, phone, address, notes, type, payment, branch })}
@@ -179,6 +172,7 @@ function SummaryRow({ label, value, bold, accent }) {
 
 // ─── Order Confirmation Modal ─────────────────────────────────────────────────
 function ConfirmationModal({ visible, order, onClose }) {
+  const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.confirmOverlay}>
@@ -196,16 +190,10 @@ function ConfirmationModal({ visible, order, onClose }) {
             <Text style={styles.confirmMsg}>
               Your order has been received successfully.{'\n'}We'll start preparing it right away!
             </Text>
-            <View style={styles.statusSteps}>
-              {['Received', 'Confirmed', 'Preparing', 'Ready'].map((s, i) => (
-                <View key={s} style={styles.stepWrap}>
-                  <View style={[styles.stepDot, i === 0 && styles.stepDotActive]} />
-                  {i < 3 && <View style={styles.stepLine} />}
-                  <Text style={[styles.stepLabel, i === 0 && styles.stepLabelActive]}>{s}</Text>
-                </View>
-              ))}
-            </View>
-            <TouchableOpacity style={styles.doneBtn} onPress={onClose}>
+            <TouchableOpacity 
+              style={[styles.doneBtn, { marginBottom: Math.max(insets.bottom, 0) }]} 
+              onPress={onClose}
+            >
               <Text style={styles.doneBtnText}>Track Order</Text>
             </TouchableOpacity>
           </View>
@@ -249,7 +237,8 @@ function CartItem({ item, dispatch }) {
 
 // ─── Cart Screen ──────────────────────────────────────────────────────────────
 export default function CartScreen({ navigation }) {
-  const { items, dispatch, subtotal, deliveryFee, total, promoCode } = useCart();
+  const insets = useSafeAreaInsets();
+  const { items, dispatch, subtotal, deliveryFee, total } = useCart();
   const { placeOrder } = useOrders();
   const [promo, setPromo] = useState('');
   const [checkoutVisible, setCheckoutVisible] = useState(false);
@@ -281,18 +270,20 @@ export default function CartScreen({ navigation }) {
     navigation.navigate('Orders');
   };
 
+  const TAB_BAR_HEIGHT = 70 + (insets.bottom > 0 ? insets.bottom - 10 : 0);
+
   if (items.length === 0) {
     return (
       <View style={styles.container}>
-        <LinearGradient colors={[Colors.primaryDark, Colors.primary]} style={styles.header}>
-          <SafeAreaView>
-            <Text style={styles.headerTitle}>My Cart</Text>
-          </SafeAreaView>
+        <LinearGradient 
+          colors={[Colors.primaryDark, Colors.primary]} 
+          style={[styles.header, { paddingTop: insets.top + 15 }]}
+        >
+          <Text style={styles.headerTitle}>My Cart</Text>
         </LinearGradient>
         <View style={styles.emptyCart}>
           <Text style={styles.emptyIcon}>🛒</Text>
           <Text style={styles.emptyText}>Your cart is empty</Text>
-          <Text style={styles.emptySubText}>Add some delicious items from the menu</Text>
           <TouchableOpacity style={styles.shopBtn} onPress={() => navigation.navigate('Menu')}>
             <Text style={styles.shopBtnText}>Browse Menu</Text>
           </TouchableOpacity>
@@ -303,27 +294,27 @@ export default function CartScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primaryDark} />
-      <LinearGradient colors={[Colors.primaryDark, Colors.primary]} style={styles.header}>
-        <SafeAreaView>
-          <View style={styles.headerRow}>
-            <Text style={styles.headerTitle}>My Cart</Text>
-            <TouchableOpacity onPress={() => dispatch({ type: 'CLEAR' })}>
-              <Text style={styles.clearBtn}>Clear All</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      <LinearGradient 
+        colors={[Colors.primaryDark, Colors.primary]} 
+        style={[styles.header, { paddingTop: insets.top + 15 }]}
+      >
+        <View style={styles.headerRow}>
+          <Text style={styles.headerTitle}>My Cart</Text>
+          <TouchableOpacity onPress={() => dispatch({ type: 'CLEAR' })}>
+            <Text style={styles.clearBtn}>Clear All</Text>
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
 
       <FlatList
         data={items}
         keyExtractor={i => i.key}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingBottom: 110 + TAB_BAR_HEIGHT }]}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => <CartItem item={item} dispatch={dispatch} />}
         ListFooterComponent={() => (
           <View style={styles.footer}>
-            {/* Promo code */}
             <View style={styles.promoWrap}>
               <TextInput
                 style={styles.promoInput}
@@ -337,7 +328,6 @@ export default function CartScreen({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            {/* Totals */}
             <View style={styles.totalsCard}>
               <SummaryRow label="Subtotal" value={`Rs. ${subtotal.toLocaleString()}`} />
               <SummaryRow label="Delivery Fee" value={`Rs. ${deliveryFee.toLocaleString()}`} />
@@ -348,8 +338,7 @@ export default function CartScreen({ navigation }) {
         )}
       />
 
-      {/* Checkout button */}
-      <View style={styles.checkoutBar}>
+      <View style={[styles.checkoutBar, { bottom: TAB_BAR_HEIGHT + 15 }]}>
         <TouchableOpacity style={styles.checkoutBtn} onPress={() => setCheckoutVisible(true)}>
           <Text style={styles.checkoutBtnText}>Proceed to Checkout · Rs. {total.toLocaleString()}</Text>
           <Ionicons name="arrow-forward" size={20} color={Colors.white} />
@@ -375,225 +364,96 @@ export default function CartScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.offWhite },
-
   header: {
-    paddingTop: 52, paddingHorizontal: Spacing.base, paddingBottom: Spacing.lg,
-    borderBottomLeftRadius: 20, borderBottomRightRadius: 20,
+    paddingHorizontal: 20, paddingBottom: 25,
+    borderBottomLeftRadius: 30, borderBottomRightRadius: 30,
   },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   headerTitle: { fontSize: 22, fontWeight: '800', color: Colors.white },
   clearBtn: { fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
-
-  // Empty state
   emptyCart: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.xxl },
   emptyIcon: { fontSize: 64, marginBottom: Spacing.lg },
-  emptyText: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 6 },
-  emptySubText: { fontSize: 14, color: Colors.textSecondary, textAlign: 'center', marginBottom: Spacing.xl },
-  shopBtn: {
-    backgroundColor: Colors.primary, borderRadius: Radii.full,
-    paddingVertical: 14, paddingHorizontal: 32, ...Shadows.md,
-  },
-  shopBtnText: { color: Colors.white, fontWeight: '700', fontSize: 16 },
-
-  // Cart items
-  list: { padding: Spacing.base, paddingBottom: 100 },
+  emptyText: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 20 },
+  shopBtn: { backgroundColor: Colors.primary, borderRadius: Radii.full, paddingVertical: 14, paddingHorizontal: 32 },
+  shopBtnText: { color: Colors.white, fontWeight: '700' },
+  list: { padding: Spacing.base },
   cartItem: {
-    backgroundColor: Colors.white, borderRadius: Radii.lg,
-    flexDirection: 'row', alignItems: 'center',
-    padding: Spacing.md, marginBottom: Spacing.md, ...Shadows.sm,
+    backgroundColor: Colors.white, borderRadius: Radii.lg, flexDirection: 'row',
+    alignItems: 'center', padding: Spacing.md, marginBottom: Spacing.md, ...Shadows.sm,
   },
   cartItemImg: { width: 70, height: 70, borderRadius: Radii.md, marginRight: Spacing.md },
   cartItemInfo: { flex: 1 },
-  cartItemName: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary, marginBottom: 2 },
+  cartItemName: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
   cartItemMeta: { fontSize: 12, color: Colors.textSecondary, marginBottom: 1 },
   cartItemPrice: { fontSize: 15, fontWeight: '700', color: Colors.primary, marginTop: 4 },
-  cartQty: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.surfaceSecondary,
-    borderRadius: Radii.full, padding: 4,
-  },
-  cartQtyBtn: {
-    width: 28, height: 28, borderRadius: 14,
-    backgroundColor: Colors.white, alignItems: 'center', justifyContent: 'center',
-    ...Shadows.sm,
-  },
-  cartQtyText: {
-    fontSize: 14, fontWeight: '700', color: Colors.textPrimary, marginHorizontal: 10,
-  },
-
-  // Footer
+  cartQty: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surfaceSecondary, borderRadius: Radii.full, padding: 4 },
+  cartQtyBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.white, alignItems: 'center', justifyContent: 'center' },
+  cartQtyText: { fontSize: 14, fontWeight: '700', marginHorizontal: 10 },
   footer: { marginTop: Spacing.md },
   promoWrap: {
     flexDirection: 'row', backgroundColor: Colors.white,
     borderRadius: Radii.lg, overflow: 'hidden', marginBottom: Spacing.md,
     borderWidth: 1.5, borderColor: Colors.border,
   },
-  promoInput: { flex: 1, padding: Spacing.md, fontSize: 14, color: Colors.textPrimary },
-  promoApply: {
-    backgroundColor: Colors.primary, paddingHorizontal: Spacing.lg,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  promoApplyText: { color: Colors.white, fontWeight: '700', fontSize: 14 },
-  totalsCard: {
-    backgroundColor: Colors.white, borderRadius: Radii.lg,
-    padding: Spacing.base, ...Shadows.sm,
-  },
+  promoInput: { flex: 1, padding: Spacing.md, fontSize: 14 },
+  promoApply: { backgroundColor: Colors.primary, paddingHorizontal: Spacing.lg, justifyContent: 'center' },
+  promoApplyText: { color: Colors.white, fontWeight: '700' },
+  totalsCard: { backgroundColor: Colors.white, borderRadius: Radii.lg, padding: Spacing.base, ...Shadows.sm },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   summaryLabel: { fontSize: 14, color: Colors.textSecondary },
-  summaryValue: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
+  summaryValue: { fontSize: 14, fontWeight: '600' },
   summaryDivider: { height: 1, backgroundColor: Colors.border, marginVertical: 8 },
-
-  // Checkout bar
   checkoutBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    padding: Spacing.base, backgroundColor: Colors.white,
-    borderTopWidth: 1, borderTopColor: Colors.border,
+    position: 'absolute', left: 0, right: 0,
+    paddingHorizontal: Spacing.base,
   },
   checkoutBtn: {
     backgroundColor: Colors.primary, borderRadius: Radii.full,
-    paddingVertical: 16, flexDirection: 'row',
-    alignItems: 'center', justifyContent: 'center', ...Shadows.md,
+    paddingVertical: 18, flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'center', ...Shadows.lg,
   },
-  checkoutBtnText: { color: Colors.white, fontWeight: '700', fontSize: 16, marginRight: 8 },
-
-  // Checkout Modal
+  checkoutBtnText: { color: Colors.white, fontWeight: '800', fontSize: 16, marginRight: 10 },
   checkoutContainer: { flex: 1, backgroundColor: Colors.offWhite },
-  checkoutHeader: {
-    paddingTop: 52, paddingHorizontal: Spacing.base, paddingBottom: Spacing.lg,
-  },
+  checkoutHeader: { paddingHorizontal: 20, paddingBottom: 25 },
   checkoutHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   checkoutTitle: { fontSize: 20, fontWeight: '800', color: Colors.white },
   checkoutScroll: { flex: 1 },
-  section: {
-    fontSize: 16, fontWeight: '700', color: Colors.textPrimary,
-    marginTop: Spacing.xl, marginBottom: Spacing.sm,
-    marginHorizontal: Spacing.base,
-  },
-
-  // Toggle
+  section: { fontSize: 16, fontWeight: '700', marginTop: Spacing.xl, marginBottom: Spacing.sm, marginHorizontal: Spacing.base },
   toggleRow: { flexDirection: 'row', paddingHorizontal: Spacing.base, gap: Spacing.md },
-  toggleBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 12, borderRadius: Radii.lg,
-    borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.white,
-    gap: 6,
-  },
+  toggleBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: Radii.lg, borderWidth: 2, borderColor: Colors.border, backgroundColor: Colors.white },
   toggleBtnActive: { borderColor: Colors.primary, backgroundColor: Colors.primary },
-  toggleText: { fontSize: 14, fontWeight: '600', color: Colors.textSecondary },
+  toggleText: { fontSize: 14, fontWeight: '600', marginLeft: 6 },
   toggleTextActive: { color: Colors.white },
-
-  // Fields
   fieldWrap: { paddingHorizontal: Spacing.base, marginBottom: Spacing.md },
   fieldLabel: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary, marginBottom: 6 },
-  field: {
-    backgroundColor: Colors.white, borderRadius: Radii.md,
-    borderWidth: 1.5, borderColor: Colors.border,
-    padding: Spacing.md, fontSize: 14, color: Colors.textPrimary,
-  },
+  field: { backgroundColor: Colors.white, borderRadius: Radii.md, borderWidth: 1.5, borderColor: Colors.border, padding: Spacing.md },
   fieldMulti: { height: 80, textAlignVertical: 'top' },
-
-  // Branch
-  branchCard: {
-    flexDirection: 'row', alignItems: 'flex-start',
-    backgroundColor: Colors.white, borderRadius: Radii.md,
-    borderWidth: 1.5, borderColor: Colors.border,
-    padding: Spacing.md, marginHorizontal: Spacing.base, marginBottom: Spacing.sm,
-  },
-  branchCardActive: { borderColor: Colors.primary, backgroundColor: Colors.primaryFade },
-  branchRadio: {
-    width: 20, height: 20, borderRadius: 10,
-    borderWidth: 2, borderColor: Colors.border,
-    alignItems: 'center', justifyContent: 'center',
-    marginRight: Spacing.md, marginTop: 2,
-  },
+  branchCard: { flexDirection: 'row', padding: Spacing.md, marginHorizontal: Spacing.base, marginBottom: Spacing.sm, backgroundColor: Colors.white, borderRadius: Radii.md, borderWidth: 1.5, borderColor: Colors.border },
+  branchCardActive: { borderColor: Colors.primary },
+  branchRadio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: Colors.border, marginRight: 10, alignItems: 'center', justifyContent: 'center' },
   branchRadioActive: { borderColor: Colors.primary },
   branchRadioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.primary },
-  branchName: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
-  branchAddr: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
-  branchHours: { fontSize: 11, color: Colors.textMuted, marginTop: 2 },
-
-  // Payment
-  payRow: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.white, borderRadius: Radii.md,
-    borderWidth: 1.5, borderColor: Colors.border,
-    padding: Spacing.md, marginHorizontal: Spacing.base, marginBottom: Spacing.sm,
-  },
-  payRowActive: { borderColor: Colors.primary, backgroundColor: Colors.primaryFade },
-  payIcon: { fontSize: 22, marginRight: Spacing.md },
-  payLabel: { flex: 1, fontSize: 14, color: Colors.textSecondary },
-  payLabelActive: { color: Colors.primary, fontWeight: '600' },
-  radio: {
-    width: 20, height: 20, borderRadius: 10,
-    borderWidth: 2, borderColor: Colors.border,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  radioActive: { borderColor: Colors.primary },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.primary },
-
-  // Summary card (checkout modal)
-  summaryCard: {
-    backgroundColor: Colors.white, borderRadius: Radii.lg,
-    padding: Spacing.base, marginHorizontal: Spacing.base, ...Shadows.sm,
-  },
-
-  // Checkout footer
-  checkoutFooter: {
-    padding: Spacing.base, borderTopWidth: 1, borderTopColor: Colors.border,
-    backgroundColor: Colors.white,
-  },
-  confirmBtn: {
-    backgroundColor: Colors.primary, borderRadius: Radii.full,
-    paddingVertical: 16, alignItems: 'center', ...Shadows.md,
-  },
+  branchName: { fontWeight: '700' },
+  branchAddr: { fontSize: 12, color: Colors.textSecondary },
+  payRow: { flexDirection: 'row', padding: Spacing.md, marginHorizontal: Spacing.base, marginBottom: Spacing.sm, backgroundColor: Colors.white, borderRadius: Radii.md, borderWidth: 1.5, borderColor: Colors.border },
+  payRowActive: { borderColor: Colors.primary },
+  payIcon: { fontSize: 20, marginRight: 10 },
+  payLabel: { flex: 1, fontWeight: '600' },
+  summaryCard: { backgroundColor: Colors.white, borderRadius: Radii.lg, padding: Spacing.base, marginHorizontal: Spacing.base, ...Shadows.sm },
+  checkoutFooter: { padding: Spacing.base, backgroundColor: Colors.white, borderTopWidth: 1, borderTopColor: Colors.border },
+  confirmBtn: { backgroundColor: Colors.primary, borderRadius: Radii.full, paddingVertical: 16, alignItems: 'center' },
   confirmBtnDisabled: { backgroundColor: Colors.textMuted },
   confirmText: { color: Colors.white, fontWeight: '700', fontSize: 16 },
-
-  // Confirmation modal
-  confirmOverlay: {
-    flex: 1, backgroundColor: Colors.overlay,
-    alignItems: 'center', justifyContent: 'center', padding: Spacing.xl,
-  },
-  confirmCard: {
-    backgroundColor: Colors.white, borderRadius: 24,
-    overflow: 'hidden', width: '100%', maxWidth: 360,
-  },
-  confirmHeader: {
-    padding: Spacing.xl, alignItems: 'center',
-  },
-  confirmIcon: { fontSize: 52, marginBottom: Spacing.sm },
+  confirmOverlay: { flex: 1, backgroundColor: Colors.overlay, alignItems: 'center', justifyContent: 'center', padding: Spacing.xl },
+  confirmCard: { backgroundColor: Colors.white, borderRadius: 24, overflow: 'hidden', width: '100%' },
+  confirmHeader: { padding: Spacing.xl, alignItems: 'center' },
+  confirmIcon: { fontSize: 52 },
   confirmTitle: { fontSize: 24, fontWeight: '800', color: Colors.white },
   confirmBody: { padding: Spacing.xl, alignItems: 'center' },
-  orderIdBadge: {
-    backgroundColor: Colors.primaryFade, borderRadius: Radii.lg,
-    paddingVertical: Spacing.md, paddingHorizontal: Spacing.xl,
-    alignItems: 'center', marginBottom: Spacing.lg, width: '100%',
-  },
-  orderIdLabel: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600', marginBottom: 4 },
+  orderIdBadge: { backgroundColor: Colors.primaryFade, borderRadius: Radii.lg, padding: Spacing.md, alignItems: 'center', marginBottom: Spacing.lg, width: '100%' },
+  orderIdLabel: { fontSize: 12, color: Colors.textSecondary },
   orderId: { fontSize: 22, fontWeight: '800', color: Colors.primary },
-  confirmMsg: {
-    fontSize: 14, color: Colors.textSecondary, textAlign: 'center',
-    lineHeight: 22, marginBottom: Spacing.xl,
-  },
-  statusSteps: {
-    flexDirection: 'row', alignItems: 'flex-start',
-    justifyContent: 'center', marginBottom: Spacing.xl, width: '100%',
-  },
-  stepWrap: { alignItems: 'center', flex: 1 },
-  stepDot: {
-    width: 14, height: 14, borderRadius: 7,
-    backgroundColor: Colors.border, marginBottom: 4,
-  },
-  stepDotActive: { backgroundColor: Colors.primary },
-  stepLine: {
-    position: 'absolute', top: 7, left: '50%',
-    width: '100%', height: 2, backgroundColor: Colors.border,
-  },
-  stepLabel: { fontSize: 10, color: Colors.textMuted, textAlign: 'center' },
-  stepLabelActive: { color: Colors.primary, fontWeight: '700' },
-  doneBtn: {
-    backgroundColor: Colors.primary, borderRadius: Radii.full,
-    paddingVertical: 14, paddingHorizontal: 40, ...Shadows.md,
-  },
-  doneBtnText: { color: Colors.white, fontWeight: '700', fontSize: 16 },
+  confirmMsg: { textAlign: 'center', color: Colors.textSecondary, marginBottom: Spacing.xl },
+  doneBtn: { backgroundColor: Colors.primary, borderRadius: Radii.full, paddingVertical: 14, paddingHorizontal: 40 },
+  doneBtnText: { color: Colors.white, fontWeight: '700' },
 });
