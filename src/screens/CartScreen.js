@@ -134,7 +134,7 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
             disabled={!valid}
           >
             <Text style={styles.confirmText}>
-              Place Order · Rs. {type === 'delivery' ? total.toLocaleString() : (total - deliveryFee).toLocaleString()}
+              Place Order · Rs. {total.toLocaleString()}
             </Text>
           </TouchableOpacity>
         </View>
@@ -310,7 +310,7 @@ export default function CartScreen({ navigation }) {
       <FlatList
         data={items}
         keyExtractor={i => i.key}
-        contentContainerStyle={[styles.list, { paddingBottom: 110 + TAB_BAR_HEIGHT }]}
+        contentContainerStyle={[styles.list, { paddingBottom: TAB_BAR_HEIGHT + 30 }]}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => <CartItem item={item} dispatch={dispatch} />}
         ListFooterComponent={() => (
@@ -334,16 +334,24 @@ export default function CartScreen({ navigation }) {
               <View style={styles.summaryDivider} />
               <SummaryRow label="Total" value={`Rs. ${total.toLocaleString()}`} bold />
             </View>
+
+            {/* Positioned at the bottom of the items list with a little space */}
+            <TouchableOpacity 
+              style={[styles.checkoutBtn, { marginTop: 30, marginBottom: 20 }]} 
+              onPress={() => setCheckoutVisible(true)}
+            >
+              <Text style={styles.checkoutBtnText}>Proceed to Checkout · Rs. {total.toLocaleString()}</Text>
+              <Ionicons name="arrow-forward" size={20} color={Colors.white} />
+            </TouchableOpacity>
           </View>
         )}
       />
 
-      <View style={[styles.checkoutBar, { bottom: TAB_BAR_HEIGHT + 15 }]}>
-        <TouchableOpacity style={styles.checkoutBtn} onPress={() => setCheckoutVisible(true)}>
-          <Text style={styles.checkoutBtnText}>Proceed to Checkout · Rs. {total.toLocaleString()}</Text>
-          <Ionicons name="arrow-forward" size={20} color={Colors.white} />
-        </TouchableOpacity>
-      </View>
+      <ConfirmationModal
+        visible={confirmVisible}
+        order={confirmOrder}
+        onClose={handleDone}
+      />
 
       <CheckoutModal
         visible={checkoutVisible}
@@ -351,12 +359,6 @@ export default function CartScreen({ navigation }) {
         onConfirm={handleConfirm}
         total={total}
         deliveryFee={deliveryFee}
-      />
-
-      <ConfirmationModal
-        visible={confirmVisible}
-        order={confirmOrder}
-        onClose={handleDone}
       />
     </View>
   );
