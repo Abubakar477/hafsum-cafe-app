@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Shadows } from '../theme';
 import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useToast } from '../components/ToastNotification';
 import { PRODUCTS } from '../api/mockData';
 
 const PRIMARY = Colors?.primary || '#492760';
@@ -98,9 +99,11 @@ export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { dispatch, itemCount } = useCart();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
-  
+  const { showToast } = useToast();
+
   const handleAdd = (product) => {
     dispatch({ type: 'ADD', payload: { product, qty: 1 } });
+    showToast(`✓ ${product.name} added to cart!`);
   };
 
   const specialItems = PRODUCTS.filter(p => p.isSpecial);
