@@ -1,8 +1,8 @@
 // ─── Menu Screen ──────────────────────────────────────────────────────────────
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, Image,
-  TextInput, Dimensions, StatusBar,
+  TextInput, Dimensions, StatusBar, Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -45,12 +45,45 @@ function MenuCard({ item, onAdd }) {
 }
 
 // ── MenuScreen ────────────────────────────────────────────────────────────────
+const CAT_BAR_HEIGHT = 145; // height of category bar
+
 export default function MenuScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { dispatch } = useCart();
   const { showToast } = useToast();
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
+
+  // Scroll-aware category bar
+  const catBarTranslateY = useRef(new Animated.Value(0)).current;
+  const lastScrollY = useRef(0);
+  const catBarVisible = useRef(true);
+
+  const handleScroll = (e) => {
+    const currentY = e.nativeEvent.contentOffset.y;
+    const diff = currentY - lastScrollY.current;
+
+    if (diff > 8 && catBarVisible.current && currentY > 20) {
+      // Scrolling DOWN — hide category bar
+      catBarVisible.current = false;
+      Animated.spring(catBarTranslateY, {
+        toValue: -CAT_BAR_HEIGHT,
+        useNativeDriver: true,
+        speed: 20,
+        bounciness: 0,
+      }).start();
+    } else if (diff < -8 && !catBarVisible.current) {
+      // Scrolling UP — show category bar
+      catBarVisible.current = true;
+      Animated.spring(catBarTranslateY, {
+        toValue: 0,
+        useNativeDriver: true,
+        speed: 20,
+        bounciness: 0,
+      }).start();
+    }
+    lastScrollY.current = currentY;
+  };
 
   const filtered = PRODUCTS.filter(p => {
     const matchCat = activeCategory === 'all' || p.categoryId === activeCategory;
@@ -95,7 +128,13 @@ export default function MenuScreen({ navigation }) {
         </LinearGradient>
       </View>
 
-      <View style={styles.catTabsContainer}>
+      {/* Animated Category Bar */}
+      <Animated.View
+        style={[
+          styles.catTabsContainer,
+          { transform: [{ translateY: catBarTranslateY }] },
+        ]}
+      >
         <FlatList
           data={CATEGORIES}
           keyExtractor={i => i.id}
@@ -111,7 +150,7 @@ export default function MenuScreen({ navigation }) {
                 activeOpacity={0.8}
               >
                 <View style={[styles.catIconWrap, isActive && styles.catIconWrapActive]}>
-                   <Text style={styles.catIcon}>{item.icon}</Text>
+                  <Text style={styles.catIcon}>{item.icon}</Text>
                 </View>
                 <Text style={[styles.catTabText, isActive && styles.catTabTextActive]} numberOfLines={1}>
                   {item.name}
@@ -120,7 +159,7 @@ export default function MenuScreen({ navigation }) {
             );
           }}
         />
-      </View>
+      </Animated.View>
 
       <FlatList
         data={filtered}
@@ -129,6 +168,8 @@ export default function MenuScreen({ navigation }) {
         contentContainerStyle={[styles.grid, { paddingBottom: 100 + insets.bottom }]}
         columnWrapperStyle={styles.gridRow}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         renderItem={({ item }) => (
           <MenuCard item={item} onAdd={handleQuickAdd} />
         )}
