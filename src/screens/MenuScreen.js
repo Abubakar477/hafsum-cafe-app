@@ -13,26 +13,20 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../components/ToastNotification';
 
 const { width } = Dimensions.get('window');
-
 const PRIMARY = Colors?.primary || '#492760';
 const WHITE = '#ffffff';
 const TEXT = '#1A0D2E';
 const MUTED = '#6B5F7A';
+const CAT_BAR_HEIGHT = 145;
 
 // ── Menu Card ─────────────────────────────────────────────────────────────────
 function MenuCard({ item, onAdd }) {
   return (
     <View style={styles.menuCard}>
-      <Image 
-        source={item.image} 
-        style={styles.menuCardImg} 
-        resizeMode="cover" 
-      />
+      <Image source={item.image} style={styles.menuCardImg} resizeMode="cover" />
       <View style={styles.menuCardInfo}>
         <Text style={styles.menuCardName} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.menuCardDesc} numberOfLines={2}>
-          {item.description}
-        </Text>
+        <Text style={styles.menuCardDesc} numberOfLines={2}>{item.description}</Text>
         <View style={styles.menuCardRow}>
           <Text style={styles.menuCardPrice}>Rs. {item.price.toLocaleString()}</Text>
           <TouchableOpacity style={styles.menuAddBtn} onPress={() => onAdd(item)}>
@@ -45,8 +39,6 @@ function MenuCard({ item, onAdd }) {
 }
 
 // ── MenuScreen ────────────────────────────────────────────────────────────────
-const CAT_BAR_HEIGHT = 145; // height of category bar
-
 export default function MenuScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { dispatch } = useCart();
@@ -54,35 +46,33 @@ export default function MenuScreen({ navigation }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
 
-  // Scroll-aware category bar
-  const catBarTranslateY = useRef(new Animated.Value(0)).current;
-  const lastScrollY = useRef(0);
-  const catBarVisible = useRef(true);
+  // ── Scroll-hide logic ──────────────────────────────────────────────────────
+  const catBarY = useRef(new Animated.Value(0)).current;
+  const lastY = useRef(0);
+  const isHidden = useRef(false);
 
-  const handleScroll = (e) => {
-    const currentY = e.nativeEvent.contentOffset.y;
-    const diff = currentY - lastScrollY.current;
+  const handleScroll = ({ nativeEvent }) => {
+    const y = nativeEvent.contentOffset.y;
+    const delta = y - lastY.current;
 
-    if (diff > 8 && catBarVisible.current && currentY > 20) {
-      // Scrolling DOWN — hide category bar
-      catBarVisible.current = false;
-      Animated.spring(catBarTranslateY, {
+    if (delta > 5 && !isHidden.current && y > 10) {
+      // Scrolling DOWN → hide
+      isHidden.current = true;
+      Animated.timing(catBarY, {
         toValue: -CAT_BAR_HEIGHT,
+        duration: 220,
         useNativeDriver: true,
-        speed: 20,
-        bounciness: 0,
       }).start();
-    } else if (diff < -8 && !catBarVisible.current) {
-      // Scrolling UP — show category bar
-      catBarVisible.current = true;
-      Animated.spring(catBarTranslateY, {
+    } else if (delta < -5 && isHidden.current) {
+      // Scrolling UP → show
+      isHidden.current = false;
+      Animated.timing(catBarY, {
         toValue: 0,
+        duration: 200,
         useNativeDriver: true,
-        speed: 20,
-        bounciness: 0,
       }).start();
     }
-    lastScrollY.current = currentY;
+    lastY.current = y;
   };
 
   const filtered = PRODUCTS.filter(p => {
@@ -100,7 +90,7 @@ export default function MenuScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* HEADER - Standardized with Home */}
+      {/* Fixed Header */}
       <View style={styles.header}>
         <LinearGradient
           colors={['#2E1540', '#492760']}
@@ -114,7 +104,6 @@ export default function MenuScreen({ navigation }) {
               </View>
             </TouchableOpacity>
           </View>
-
           <View style={styles.searchWrap}>
             <Ionicons name="search" size={20} color={MUTED} style={styles.searchIcon} />
             <TextInput
@@ -128,57 +117,61 @@ export default function MenuScreen({ navigation }) {
         </LinearGradient>
       </View>
 
-      {/* Animated Category Bar */}
-      <Animated.View
-        style={[
-          styles.catTabsContainer,
-          { transform: [{ translateY: catBarTranslateY }] },
-        ]}
-      >
-        <FlatList
-          data={CATEGORIES}
-          keyExtractor={i => i.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.catTabsContent}
-          renderItem={({ item }) => {
-            const isActive = activeCategory === item.id;
-            return (
-              <TouchableOpacity
-                style={[styles.catTab, isActive && styles.catTabActive]}
-                onPress={() => setActiveCategory(item.id)}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.catIconWrap, isActive && styles.catIconWrapActive]}>
-                  <Text style={styles.catIcon}>{item.icon}</Text>
-                </View>
-                <Text style={[styles.catTabText, isActive && styles.catTabTextActive]} numberOfLines={1}>
-                  {item.name}
-                </Text>
-              </TouchableOpacity>
-            );
-          }}
-        />
-      </Animated.View>
+      {/* Body: FlatList sits below, category bar floats on top */}
+      <View style={{ flex: 1 }}>
 
-      <FlatList
-        data={filtered}
-        keyExtractor={i => i.id}
-        numColumns={2}
-        contentContainerStyle={[styles.grid, { paddingBottom: 100 + insets.bottom }]}
-        columnWrapperStyle={styles.gridRow}
-        showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        renderItem={({ item }) => (
-          <MenuCard item={item} onAdd={handleQuickAdd} />
-        )}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>No items found</Text>
-          </View>
-        }
-      />
+        {/* Menu Grid — paddingTop reserves space for the floating cat bar */}
+        <FlatList
+          data={filtered}
+          keyExtractor={i => i.id}
+          numColumns={2}
+          contentContainerStyle={[
+            styles.grid,
+            { paddingTop: CAT_BAR_HEIGHT + 8, paddingBottom: 100 + insets.bottom },
+          ]}
+          columnWrapperStyle={styles.gridRow}
+          showsVerticalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          renderItem={({ item }) => <MenuCard item={item} onAdd={handleQuickAdd} />}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={styles.emptyText}>No items found</Text>
+            </View>
+          }
+        />
+
+        {/* Floating Category Bar — absolutely positioned, slides off top */}
+        <Animated.View
+          style={[styles.catBar, { transform: [{ translateY: catBarY }] }]}
+        >
+          <FlatList
+            data={CATEGORIES}
+            keyExtractor={i => i.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.catTabsContent}
+            renderItem={({ item }) => {
+              const isActive = activeCategory === item.id;
+              return (
+                <TouchableOpacity
+                  style={[styles.catTab, isActive && styles.catTabActive]}
+                  onPress={() => setActiveCategory(item.id)}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.catIconWrap, isActive && styles.catIconWrapActive]}>
+                    <Text style={styles.catIcon}>{item.icon}</Text>
+                  </View>
+                  <Text style={[styles.catTabText, isActive && styles.catTabTextActive]} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </Animated.View>
+
+      </View>
     </View>
   );
 }
@@ -187,88 +180,70 @@ const CARD_W = (width - 48) / 2;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f4fb' },
-  header: {
-    overflow: 'hidden',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerGradient: {
-    paddingHorizontal: 20,
-    paddingBottom: 25,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-  },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: WHITE,
-  },
+
+  // Header
+  header: { overflow: 'hidden', borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
+  headerGradient: { paddingHorizontal: 20, paddingBottom: 25 },
+  headerTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 15 },
+  headerTitle: { fontSize: 26, fontWeight: '800', color: WHITE },
   bagIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 42, height: 42, borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.12)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
   },
   searchWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: WHITE,
-    borderRadius: 15,
-    paddingHorizontal: 15,
-    height: 50,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: WHITE, borderRadius: 15,
+    paddingHorizontal: 15, height: 50,
     ...Shadows.sm,
   },
   searchIcon: { marginRight: 10 },
   searchInput: { flex: 1, fontSize: 16, color: TEXT },
-  catTabsContainer: {
+
+  // Floating category bar
+  catBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
     backgroundColor: WHITE,
     paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#f0e8f8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 4,
   },
   catTabsContent: { paddingHorizontal: 15 },
   catTab: {
-    alignItems: 'center',
-    width: 85,
-    marginRight: 12,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#eee',
+    alignItems: 'center', width: 85, marginRight: 12,
+    paddingVertical: 10, borderRadius: 20,
+    backgroundColor: '#fff', borderWidth: 1, borderColor: '#eee',
     ...Shadows.sm,
   },
   catTabActive: { backgroundColor: PRIMARY, borderColor: PRIMARY },
   catIconWrap: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 46, height: 46, borderRadius: 23,
     backgroundColor: '#f3eef9',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center', alignItems: 'center',
     marginBottom: 8,
   },
   catIconWrapActive: { backgroundColor: 'rgba(255,255,255,0.2)' },
   catIcon: { fontSize: 22 },
   catTabText: { fontSize: 11, fontWeight: '700', color: TEXT },
   catTabTextActive: { color: WHITE },
+
+  // Grid
   grid: { padding: 16 },
   gridRow: { justifyContent: 'space-between' },
   menuCard: {
-    width: CARD_W,
-    backgroundColor: WHITE,
-    borderRadius: 20,
-    marginBottom: 16,
-    overflow: 'hidden',
-    ...Shadows.sm,
+    width: CARD_W, backgroundColor: WHITE,
+    borderRadius: 20, marginBottom: 16,
+    overflow: 'hidden', ...Shadows.sm,
   },
   menuCardImg: { width: '100%', height: 120 },
   menuCardInfo: { padding: 12 },
@@ -277,12 +252,8 @@ const styles = StyleSheet.create({
   menuCardRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   menuCardPrice: { fontSize: 14, fontWeight: '800', color: PRIMARY },
   menuAddBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: PRIMARY,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: PRIMARY, alignItems: 'center', justifyContent: 'center',
   },
   empty: { flex: 1, alignItems: 'center', padding: 40 },
   emptyText: { color: MUTED, fontSize: 16 },
