@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  ImageBackground,
   StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -112,18 +113,16 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
-      {/* FIXED HEADER - Standardized for all tabs */}
-      <LinearGradient
-        colors={['#2E1540', '#492760']}
-        style={[styles.header, { paddingTop: insets.top + 15 }]}
+      {/* HEADER — Hafsum brand image fills the full top bar */}
+      <ImageBackground
+        source={require('../../assets/images/hafsum_logo.jpg')}
+        style={[styles.header, { paddingTop: insets.top + 10 }]}
+        resizeMode="cover"
       >
+        {/* Dark overlay so cart icon is always visible */}
+        <View style={styles.headerOverlay} />
         <View style={styles.headerTop}>
-          {/* Real Hafsum logo image */}
-          <Image
-            source={require('../../assets/images/hafsum_logo.jpg')}
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
+          <View style={{ flex: 1 }} />
           <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
             <View style={styles.bagIconWrap}>
               <Ionicons name="bag-outline" size={24} color={WHITE} />
@@ -131,7 +130,7 @@ export default function HomeScreen({ navigation }) {
             </View>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
+      </ImageBackground>
 
       <ScrollView 
         showsVerticalScrollIndicator={false} 
@@ -181,13 +180,20 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f4fb' },
   header: {
-    paddingHorizontal: 20,
-    paddingBottom: 25,
+    width: '100%',
+    height: 220,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
+    overflow: 'hidden',
     zIndex: 10,
   },
-  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 },
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerTop: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 16 },
   headerLogo: { width: 160, height: 64 },
   bagIconWrap: {
     width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.12)',
