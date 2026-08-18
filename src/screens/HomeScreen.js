@@ -113,24 +113,28 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
-      {/* HEADER — Hafsum brand image fills the full top bar */}
-      <ImageBackground
-        source={require('../../assets/images/hafsum_logo.jpg')}
+      {/* FIXED HEADER — Left-Aligned Logo & Right Cart Icon */}
+      <LinearGradient
+        colors={['#2E1540', '#492760']}
         style={[styles.header, { paddingTop: insets.top + 10 }]}
-        resizeMode="cover"
       >
-        {/* Dark overlay so cart icon is always visible */}
-        <View style={styles.headerOverlay} />
-        <View style={styles.headerTop}>
-          <View style={{ flex: 1 }} />
-          <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
+        <View style={styles.headerRow}>
+          {/* Logo in the Left Corner */}
+          <Image
+            source={require('../../assets/images/hafsum_brand_header.png')}
+            style={styles.cornerLogo}
+            resizeMode="contain"
+          />
+
+          {/* Cart Icon in the Right Corner */}
+          <TouchableOpacity onPress={() => navigation.navigate('Cart')} activeOpacity={0.8}>
             <View style={styles.bagIconWrap}>
               <Ionicons name="bag-outline" size={24} color={WHITE} />
               {itemCount > 0 && <View style={styles.badge} />}
             </View>
           </TouchableOpacity>
         </View>
-      </ImageBackground>
+      </LinearGradient>
 
       <ScrollView 
         showsVerticalScrollIndicator={false} 
@@ -180,26 +184,43 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f4fb' },
   header: {
-    width: '100%',
-    height: 220,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    overflow: 'hidden',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomLeftRadius: 26,
+    borderBottomRightRadius: 26,
     zIndex: 10,
+    ...Shadows.md,
   },
-  headerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.18)',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  headerTop: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 16 },
-  headerLogo: { width: 160, height: 64 },
+  cornerLogo: {
+    width: 160,
+    height: 60,
+  },
   bagIconWrap: {
-    width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.12)',
-    justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
-  badge: { position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: '#E8445A' },
+  badge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
+    backgroundColor: '#E8445A',
+    borderWidth: 1.5,
+    borderColor: '#492760',
+  },
   titleWrap: { alignItems: 'center', marginTop: 20, paddingHorizontal: 20 },
   sectionTitle: { fontSize: 24, fontWeight: '800', color: TEXT },
   sectionSubtitle: { fontSize: 14, color: MUTED, fontStyle: 'italic', marginTop: 4, textAlign: 'center' },
