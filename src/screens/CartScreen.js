@@ -310,7 +310,7 @@ export default function CartScreen({ navigation }) {
       <FlatList
         data={items}
         keyExtractor={i => i.key}
-        contentContainerStyle={[styles.list, { paddingBottom: TAB_BAR_HEIGHT + 30 }]}
+        contentContainerStyle={[styles.list, { paddingBottom: TAB_BAR_HEIGHT + 20 }]}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => <CartItem item={item} dispatch={dispatch} />}
         ListFooterComponent={() => (
@@ -335,9 +335,9 @@ export default function CartScreen({ navigation }) {
               <SummaryRow label="Total" value={`Rs. ${total.toLocaleString()}`} bold />
             </View>
 
-            {/* Positioned at the bottom of the items list with a little space */}
+            {/* Positioned at the bottom of the items list but adjusted "little up" by reducing top margin */}
             <TouchableOpacity 
-              style={[styles.checkoutBtn, { marginTop: 30, marginBottom: 20 }]} 
+              style={[styles.checkoutBtn, { marginTop: 25, marginBottom: 15 }]} 
               onPress={() => setCheckoutVisible(true)}
             >
               <Text style={styles.checkoutBtnText}>Proceed to Checkout · Rs. {total.toLocaleString()}</Text>

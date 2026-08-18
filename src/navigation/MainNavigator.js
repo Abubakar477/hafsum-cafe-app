@@ -12,6 +12,7 @@ import CartScreen from '../screens/CartScreen';
 import OrdersScreen from '../screens/OrdersScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { useCart } from '../context/CartContext';
+import { Colors } from '../theme';
 
 const Tab = createBottomTabNavigator();
 
@@ -37,12 +38,21 @@ export default function MainNavigator() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarHideOnKeyboard: true,
-        tabBarActiveTintColor: '#ffffff',
-        tabBarInactiveTintColor: 'rgba(255,255,255,0.5)',
-        tabBarStyle: [
-          styles.tabBar,
-          { paddingBottom: insets.bottom > 0 ? insets.bottom : 6 },
-        ],
+        tabBarActiveTintColor: Colors.primary, // Brand color for active tab
+        tabBarInactiveTintColor: '#8E8E93',    // Standard grey for inactive
+        tabBarStyle: {
+          backgroundColor: '#FFFFFF',          // Pure white background like the 2nd screenshot
+          borderTopWidth: 1,
+          borderTopColor: '#F0F0F0',           // Thin subtle border on top
+          height: Platform.OS === 'ios' ? 88 : 64 + insets.bottom, // Adjusted height for clear visibility
+          paddingBottom: Platform.OS === 'ios' ? insets.bottom : 8 + insets.bottom,
+          paddingTop: 8,
+          elevation: 10,                       // Standard shadow for Android
+          shadowColor: '#000',                 // Shadow for iOS
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        },
         tabBarLabelStyle: styles.tabLabel,
         tabBarIcon: ({ focused, color }) => {
           if (route.name === 'Cart') {
@@ -67,20 +77,10 @@ export default function MainNavigator() {
 }
 
 const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: '#492760',
-    borderTopWidth: 0,
-    height: Platform.OS === 'ios' ? 72 : 56,
-    paddingTop: 6,
-    elevation: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-  },
   tabLabel: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700', // Bold labels for clarity
+    marginBottom: 2,
   },
   badge: {
     position: 'absolute',
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 3,
     borderWidth: 1.5,
-    borderColor: '#492760',
+    borderColor: '#FFFFFF', // White border for badge on white background
   },
   badgeText: {
     color: '#fff',
