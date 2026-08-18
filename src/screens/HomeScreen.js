@@ -118,10 +118,12 @@ export default function HomeScreen({ navigation }) {
         style={[styles.header, { paddingTop: insets.top + 15 }]}
       >
         <View style={styles.headerTop}>
-          <View style={styles.headerIcons}>
-            <Text style={styles.emojiIcon}>☕</Text>
-            <Text style={styles.emojiIcon}>🎂</Text>
-          </View>
+          {/* Real Hafsum logo image */}
+          <Image
+            source={require('../../assets/images/hafsum_logo.jpg')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
           <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
             <View style={styles.bagIconWrap}>
               <Ionicons name="bag-outline" size={24} color={WHITE} />
@@ -129,8 +131,6 @@ export default function HomeScreen({ navigation }) {
             </View>
           </TouchableOpacity>
         </View>
-        <Text style={styles.logoText}>Hafsum</Text>
-        <Text style={styles.logoSub}>COFFEE & CAKE</Text>
       </LinearGradient>
 
       <ScrollView 
@@ -188,15 +188,12 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 },
-  headerIcons: { flexDirection: 'row', gap: 10 },
-  emojiIcon: { fontSize: 26 },
+  headerLogo: { width: 160, height: 64 },
   bagIconWrap: {
     width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
   },
   badge: { position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: '#E8445A' },
-  logoText: { color: WHITE, fontSize: 34, fontWeight: '900', fontStyle: 'italic' },
-  logoSub: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '700', letterSpacing: 2.5, marginTop: -4 },
   titleWrap: { alignItems: 'center', marginTop: 20, paddingHorizontal: 20 },
   sectionTitle: { fontSize: 24, fontWeight: '800', color: TEXT },
   sectionSubtitle: { fontSize: 14, color: MUTED, fontStyle: 'italic', marginTop: 4, textAlign: 'center' },
