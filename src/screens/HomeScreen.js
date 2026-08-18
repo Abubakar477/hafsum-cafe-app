@@ -1,6 +1,6 @@
 // ─── Home Screen ──────────────────────────────────────────────────────────────
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  ImageBackground,
   StatusBar,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,75 +22,183 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../components/ToastNotification';
 import { PRODUCTS } from '../api/mockData';
 
+const { width } = Dimensions.get('window');
+
 const PRIMARY = Colors?.primary || '#492760';
 const TEXT = '#1A0D2E';
 const MUTED = '#6B5F7A';
 const WHITE = '#ffffff';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SPECIAL PRODUCT CARD
+// SPECIAL PRODUCT CARD (CLEAN & ELEGANT)
 // ─────────────────────────────────────────────────────────────────────────────
-function SpecialProductCard({ product, onAdd, isFav, onFav }) {
+function SpecialProductCard({ product, onSelect, isFav, onFav }) {
+  const displayPrice = product.slicePrice || product.price;
+
   return (
     <View style={styles.specialCard}>
-      <View style={styles.topVariantRow}>
-        <View style={styles.variantLeft}>
-          <Ionicons name="gift-outline" size={18} color={MUTED} />
-          <Text style={styles.variantText}>Whole (2.5 lb)</Text>
-        </View>
-        <TouchableOpacity style={styles.outlineAddBtn} onPress={() => onAdd(product)}>
-          <Ionicons name="add" size={20} color={PRIMARY} />
-          <Text style={styles.outlineAddText}>Add</Text>
-        </TouchableOpacity>
-      </View>
-
+      {/* Product Image + Favorite Heart Button */}
       <View style={styles.imageContainer}>
         <Image source={product.image} style={styles.specialImage} resizeMode="cover" />
-        <TouchableOpacity style={styles.favBtn} onPress={() => onFav(product)}>
-          <Ionicons name={isFav ? "heart" : "heart-outline"} size={26} color={isFav ? "#E8445A" : WHITE} />
+        <TouchableOpacity style={styles.favBtn} onPress={() => onFav(product)} activeOpacity={0.8}>
+          <Ionicons name={isFav ? "heart" : "heart-outline"} size={24} color={isFav ? "#E8445A" : WHITE} />
         </TouchableOpacity>
       </View>
       
+      {/* Product Info & Action Button */}
       <View style={styles.specialContent}>
         <Text style={styles.specialName}>{product.name}</Text>
-        <Text style={styles.specialDesc}>{product.description}</Text>
+        <Text style={styles.specialDesc} numberOfLines={2}>{product.description}</Text>
 
-        <View style={styles.priceTable}>
-          <View style={styles.priceRow}>
-            <View style={{ flex: 1 }} />
-            <Text style={styles.priceHeader}>Slice</Text>
-            <Text style={styles.priceHeader}>2.5 lb</Text>
+        <View style={styles.cardBottomRow}>
+          <View>
+            <Text style={styles.priceLabel}>Starting from</Text>
+            <Text style={styles.priceValue}>Rs. {displayPrice.toLocaleString()}</Text>
           </View>
-          <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Rs.</Text>
-            <Text style={styles.priceValue}>{product.slicePrice || '825'}</Text>
-            <Text style={styles.priceValue}>{product.price.toLocaleString()}</Text>
-          </View>
-        </View>
 
-        <View style={styles.variantRow}>
-          <View style={styles.variantLeft}>
-            <Ionicons name="cut-outline" size={18} color={MUTED} />
-            <Text style={styles.variantText}>Per Slice</Text>
-          </View>
-          <TouchableOpacity style={styles.solidAddBtn} onPress={() => onAdd(product)}>
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => onSelect(product)}
+            activeOpacity={0.85}
+          >
             <Ionicons name="add" size={20} color={WHITE} />
-            <Text style={styles.solidAddText}>Add</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.variantRow}>
-          <View style={styles.variantLeft}>
-            <Ionicons name="gift-outline" size={18} color={MUTED} />
-            <Text style={styles.variantText}>Whole (2.5 lb)</Text>
-          </View>
-          <TouchableOpacity style={styles.outlineAddBtn} onPress={() => onAdd(product)}>
-            <Ionicons name="add" size={20} color={PRIMARY} />
-            <Text style={styles.outlineAddText}>Add</Text>
+            <Text style={styles.addBtnText}>Add</Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SIZE & QUANTITY POPUP MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+function SizeSelectionModal({ visible, product, onClose, onConfirm }) {
+  if (!product) return null;
+
+  const [selectedSize, setSelectedSize] = useState('slice'); // 'slice' | 'whole'
+  const [qty, setQty] = useState(1);
+
+  // Unit price based on selection
+  const unitPrice = selectedSize === 'slice' ? (product.slicePrice || 825) : product.price;
+  const totalPrice = unitPrice * qty;
+
+  const handleAdd = () => {
+    const sizeObj = selectedSize === 'slice'
+      ? { id: 'slice', label: 'Per Slice', price: product.slicePrice || 825 }
+      : { id: '2.5lb', label: 'Whole (2.5 lb)', price: product.price };
+
+    onConfirm(product, sizeObj, qty);
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.modalOverlay}>
+        <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={onClose} />
+        
+        <View style={styles.modalSheet}>
+          {/* Top Drag Handle */}
+          <View style={styles.modalHandle} />
+
+          {/* Modal Header */}
+          <View style={styles.modalHeaderRow}>
+            <Image source={product.image} style={styles.modalThumb} resizeMode="cover" />
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.modalTitle} numberOfLines={1}>{product.name}</Text>
+              <Text style={styles.modalSubtitle}>Select portion & quantity</Text>
+            </View>
+            <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
+              <Ionicons name="close" size={20} color="#6B5F7A" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.modalDivider} />
+
+          {/* Size Options Section */}
+          <Text style={styles.modalSectionLabel}>Choose Portion Size</Text>
+
+          {/* Option 1: Per Slice */}
+          <TouchableOpacity
+            style={[styles.sizeCard, selectedSize === 'slice' && styles.sizeCardActive]}
+            onPress={() => setSelectedSize('slice')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.sizeCardLeft}>
+              <View style={[styles.radioCircle, selectedSize === 'slice' && styles.radioCircleActive]}>
+                {selectedSize === 'slice' && <View style={styles.radioDot} />}
+              </View>
+              <View style={{ marginLeft: 12 }}>
+                <Text style={[styles.sizeTitle, selectedSize === 'slice' && styles.sizeTitleActive]}>
+                  Per Slice
+                </Text>
+                <Text style={styles.sizeSub}>Single fresh serving</Text>
+              </View>
+            </View>
+            <Text style={[styles.sizePriceText, selectedSize === 'slice' && styles.sizePriceTextActive]}>
+              Rs. {(product.slicePrice || 825).toLocaleString()}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Option 2: Whole Cake 2.5 lb */}
+          <TouchableOpacity
+            style={[styles.sizeCard, selectedSize === 'whole' && styles.sizeCardActive]}
+            onPress={() => setSelectedSize('whole')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.sizeCardLeft}>
+              <View style={[styles.radioCircle, selectedSize === 'whole' && styles.radioCircleActive]}>
+                {selectedSize === 'whole' && <View style={styles.radioDot} />}
+              </View>
+              <View style={{ marginLeft: 12 }}>
+                <Text style={[styles.sizeTitle, selectedSize === 'whole' && styles.sizeTitleActive]}>
+                  Whole Cake (2.5 lb)
+                </Text>
+                <Text style={styles.sizeSub}>Full cake for sharing</Text>
+              </View>
+            </View>
+            <Text style={[styles.sizePriceText, selectedSize === 'whole' && styles.sizePriceTextActive]}>
+              Rs. {product.price.toLocaleString()}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Quantity Controls */}
+          <View style={styles.qtyRow}>
+            <Text style={styles.qtyText}>Quantity</Text>
+            <View style={styles.stepperContainer}>
+              <TouchableOpacity
+                style={styles.stepBtn}
+                onPress={() => setQty(q => Math.max(1, q - 1))}
+              >
+                <Ionicons name="remove" size={18} color={PRIMARY} />
+              </TouchableOpacity>
+              <Text style={styles.qtyValue}>{qty}</Text>
+              <TouchableOpacity
+                style={styles.stepBtn}
+                onPress={() => setQty(q => q + 1)}
+              >
+                <Ionicons name="add" size={18} color={PRIMARY} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Confirm Add to Cart Button */}
+          <TouchableOpacity style={styles.modalAddBtn} onPress={handleAdd} activeOpacity={0.88}>
+            <LinearGradient
+              colors={['#6B3D8A', '#492760']}
+              style={styles.modalAddGrad}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <Ionicons name="bag-add" size={20} color={WHITE} style={{ marginRight: 8 }} />
+              <Text style={styles.modalAddBtnText}>
+                Add to Cart • Rs. {totalPrice.toLocaleString()}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -102,9 +211,20 @@ export default function HomeScreen({ navigation }) {
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const { showToast } = useToast();
 
-  const handleAdd = (product) => {
-    dispatch({ type: 'ADD', payload: { product, qty: 1 } });
-    showToast(`✓ ${product.name} added to cart!`);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleOpenModal = (product) => {
+    setSelectedProduct(product);
+    setModalVisible(true);
+  };
+
+  const handleAddToCart = (product, size, qty) => {
+    dispatch({
+      type: 'ADD',
+      payload: { product, size, qty },
+    });
+    showToast(`✓ ${product.name} (${size.label}) added to cart!`);
   };
 
   const specialItems = PRODUCTS.filter(p => p.isSpecial);
@@ -150,7 +270,7 @@ export default function HomeScreen({ navigation }) {
             <SpecialProductCard 
               key={product.id} 
               product={product} 
-              onAdd={handleAdd} 
+              onSelect={handleOpenModal} 
               isFav={isFavorite(product.id)}
               onFav={toggleFavorite}
             />
@@ -177,6 +297,14 @@ export default function HomeScreen({ navigation }) {
           </View>
         )}
       </ScrollView>
+
+      {/* Pop-up Bottom Sheet for Size & Quantity */}
+      <SizeSelectionModal
+        visible={modalVisible}
+        product={selectedProduct}
+        onClose={() => setModalVisible(false)}
+        onConfirm={handleAddToCart}
+      />
     </View>
   );
 }
@@ -225,26 +353,204 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 24, fontWeight: '800', color: TEXT },
   sectionSubtitle: { fontSize: 14, color: MUTED, fontStyle: 'italic', marginTop: 4, textAlign: 'center' },
   content: { padding: 16 },
-  specialCard: { backgroundColor: WHITE, borderRadius: 28, marginBottom: 25, overflow: 'hidden', ...Shadows.md },
-  topVariantRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, backgroundColor: WHITE },
+
+  // Special Card Styles
+  specialCard: {
+    backgroundColor: WHITE,
+    borderRadius: 24,
+    marginBottom: 20,
+    overflow: 'hidden',
+    ...Shadows.md,
+  },
   imageContainer: { position: 'relative' },
-  specialImage: { width: '100%', height: 240 },
-  favBtn: { position: 'absolute', top: 15, right: 15, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.25)', justifyContent: 'center', alignItems: 'center' },
-  specialContent: { padding: 20 },
-  specialName: { fontSize: 22, fontWeight: '800', color: TEXT, marginBottom: 8 },
-  specialDesc: { fontSize: 15, color: MUTED, lineHeight: 22, marginBottom: 18 },
-  priceTable: { backgroundColor: '#f5f0fa', borderRadius: 18, padding: 15, marginBottom: 20 },
-  priceRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  priceHeader: { width: 80, textAlign: 'center', fontSize: 13, fontWeight: '700', color: PRIMARY },
-  priceLabel: { flex: 1, fontSize: 13, color: MUTED },
-  priceValue: { width: 80, textAlign: 'center', fontSize: 18, fontWeight: '800', color: TEXT },
-  variantRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#f0e8f8' },
-  variantLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  variantText: { fontSize: 15, fontWeight: '600', color: TEXT },
-  solidAddBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: PRIMARY, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 25, gap: 6 },
-  solidAddText: { color: WHITE, fontSize: 14, fontWeight: '700' },
-  outlineAddBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: WHITE, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 25, borderWidth: 1.5, borderColor: PRIMARY, gap: 6 },
-  outlineAddText: { color: PRIMARY, fontSize: 14, fontWeight: '700' },
+  specialImage: { width: '100%', height: 230 },
+  favBtn: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  specialContent: { padding: 18 },
+  specialName: { fontSize: 20, fontWeight: '800', color: TEXT, marginBottom: 6 },
+  specialDesc: { fontSize: 13, color: MUTED, lineHeight: 19, marginBottom: 16 },
+  cardBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f2ecf8',
+  },
+  priceLabel: { fontSize: 11, color: MUTED, fontWeight: '600', textTransform: 'uppercase' },
+  priceValue: { fontSize: 20, fontWeight: '800', color: PRIMARY, marginTop: 1 },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: PRIMARY,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 6,
+    ...Shadows.sm,
+  },
+  addBtnText: { color: WHITE, fontSize: 14, fontWeight: '700' },
+
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  modalSheet: {
+    backgroundColor: WHITE,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 32,
+    maxHeight: '85%',
+    ...Shadows.lg,
+  },
+  modalHandle: {
+    width: 44,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E5E7EB',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  modalThumb: {
+    width: 54,
+    height: 54,
+    borderRadius: 14,
+  },
+  modalTitle: { fontSize: 17, fontWeight: '800', color: TEXT },
+  modalSubtitle: { fontSize: 12, color: MUTED, marginTop: 2 },
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: '#F3E8FF',
+    marginVertical: 16,
+  },
+  modalSectionLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: TEXT,
+    marginBottom: 12,
+  },
+  sizeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F9F6FC',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: '#EFE7F8',
+  },
+  sizeCardActive: {
+    backgroundColor: '#F4EBFC',
+    borderColor: PRIMARY,
+  },
+  sizeCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  radioCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioCircleActive: {
+    borderColor: PRIMARY,
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: PRIMARY,
+  },
+  sizeTitle: { fontSize: 14, fontWeight: '700', color: TEXT },
+  sizeTitleActive: { color: PRIMARY },
+  sizeSub: { fontSize: 11, color: MUTED, marginTop: 1 },
+  sizePriceText: { fontSize: 15, fontWeight: '800', color: TEXT },
+  sizePriceTextActive: { color: PRIMARY },
+
+  // Stepper
+  qtyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    marginBottom: 20,
+    paddingVertical: 6,
+  },
+  qtyText: { fontSize: 14, fontWeight: '700', color: TEXT },
+  stepperContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
+    padding: 4,
+  },
+  stepBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: WHITE,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Shadows.sm,
+  },
+  qtyValue: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: TEXT,
+    paddingHorizontal: 16,
+  },
+
+  // Modal Add Button
+  modalAddBtn: {
+    borderRadius: 18,
+    overflow: 'hidden',
+  },
+  modalAddGrad: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 15,
+  },
+  modalAddBtnText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: WHITE,
+  },
+
+  // Favorites Section
   favoritesSection: { marginTop: 5, paddingLeft: 20 },
   favHeader: { marginBottom: 15 },
   favList: { paddingRight: 20 },
