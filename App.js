@@ -11,21 +11,40 @@ import { FavoritesProvider } from './src/context/FavoritesContext';
 import { ToastProvider } from './src/components/ToastNotification';
 import MainNavigator from './src/navigation/MainNavigator';
 import SplashScreen from './src/screens/SplashScreen';
+import LocationScreen from './src/screens/LocationScreen';
 
 /**
  * Hafsum Coffee App - Main Entry Point
+ * Flow: Splash → Location Picker → Main App
  */
 export default function App() {
-  const [isSplashFinished, setIsSplashFinished] = useState(false);
+  const [appStage, setAppStage] = useState('splash'); // 'splash' | 'location' | 'app'
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
-  // Show Splash Screen first
-  if (!isSplashFinished) {
+  // 1. Splash Screen
+  if (appStage === 'splash') {
     return (
-      <SplashScreen onFinish={() => setIsSplashFinished(true)} />
+      <SafeAreaProvider>
+        <SplashScreen onFinish={() => setAppStage('location')} />
+      </SafeAreaProvider>
     );
   }
 
-  // Main App content with all necessary global states
+  // 2. Location Picker
+  if (appStage === 'location') {
+    return (
+      <SafeAreaProvider>
+        <LocationScreen
+          onFinish={(loc) => {
+            setSelectedLocation(loc);
+            setAppStage('app');
+          }}
+        />
+      </SafeAreaProvider>
+    );
+  }
+
+  // 3. Main App
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -35,7 +54,7 @@ export default function App() {
               <CartProvider>
                 <ToastProvider>
                   <NavigationContainer>
-                    <MainNavigator />
+                    <MainNavigator selectedLocation={selectedLocation} />
                   </NavigationContainer>
                 </ToastProvider>
               </CartProvider>
