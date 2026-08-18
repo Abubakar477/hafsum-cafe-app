@@ -12,13 +12,14 @@ import { ToastProvider } from './src/components/ToastNotification';
 import MainNavigator from './src/navigation/MainNavigator';
 import SplashScreen from './src/screens/SplashScreen';
 import LocationScreen from './src/screens/LocationScreen';
+import LoginScreen from './src/screens/LoginScreen';
 
 /**
  * Hafsum Coffee App - Main Entry Point
- * Flow: Splash → Location Picker → Main App
+ * Flow: Splash → Location Picker → Login → Main App
  */
 export default function App() {
-  const [appStage, setAppStage] = useState('splash'); // 'splash' | 'location' | 'app'
+  const [appStage, setAppStage] = useState('splash'); // 'splash' | 'location' | 'login' | 'app'
   const [selectedLocation, setSelectedLocation] = useState(null);
 
   // 1. Splash Screen
@@ -37,14 +38,28 @@ export default function App() {
         <LocationScreen
           onFinish={(loc) => {
             setSelectedLocation(loc);
-            setAppStage('app');
+            setAppStage('login');
           }}
         />
       </SafeAreaProvider>
     );
   }
 
-  // 3. Main App
+  // 3. Login / Sign Up
+  if (appStage === 'login') {
+    return (
+      <SafeAreaProvider>
+        <AuthProvider>
+          <LoginScreen
+            selectedLocation={selectedLocation}
+            onFinish={() => setAppStage('app')}
+          />
+        </AuthProvider>
+      </SafeAreaProvider>
+    );
+  }
+
+  // 4. Main App
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
