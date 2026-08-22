@@ -44,7 +44,7 @@ function SpecialProductCard({ product, onSelect, isFav, onFav }) {
           <Ionicons name={isFav ? "heart" : "heart-outline"} size={24} color={isFav ? "#E8445A" : WHITE} />
         </TouchableOpacity>
       </View>
-      
+
       {/* Product Info & Action Button */}
       <View style={styles.specialContent}>
         <Text style={styles.specialName}>{product.name}</Text>
@@ -96,7 +96,7 @@ function SizeSelectionModal({ visible, product, onClose, onConfirm }) {
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={onClose} />
-        
+
         <View style={styles.modalSheet}>
           {/* Top Drag Handle */}
           <View style={styles.modalHandle} />
@@ -232,7 +232,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      
+
       {/* FIXED HEADER — Left-Aligned Logo & Right Cart Icon */}
       <LinearGradient
         colors={['#2E1540', '#492760']}
@@ -241,7 +241,7 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.headerRow}>
           {/* Logo in the Left Corner */}
           <Image
-            source={require('../../assets/images/hafsum_brand_header.png')}
+            source={require('../../assets/images/topheaderlogo.jpeg')}
             style={styles.cornerLogo}
             resizeMode="contain"
           />
@@ -256,8 +256,8 @@ export default function HomeScreen({ navigation }) {
         </View>
       </LinearGradient>
 
-      <ScrollView 
-        showsVerticalScrollIndicator={false} 
+      <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 110 + insets.bottom }}
       >
         <View style={styles.titleWrap}>
@@ -267,10 +267,10 @@ export default function HomeScreen({ navigation }) {
 
         <View style={styles.content}>
           {specialItems.map(product => (
-            <SpecialProductCard 
-              key={product.id} 
-              product={product} 
-              onSelect={handleOpenModal} 
+            <SpecialProductCard
+              key={product.id}
+              product={product}
+              onSelect={handleOpenModal}
               isFav={isFavorite(product.id)}
               onFav={toggleFavorite}
             />
@@ -284,8 +284,8 @@ export default function HomeScreen({ navigation }) {
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.favList}>
               {favorites.map(item => (
-                <TouchableOpacity 
-                  key={item.id} 
+                <TouchableOpacity
+                  key={item.id}
                   style={styles.favItem}
                   onPress={() => navigation.navigate('Menu', { searchQuery: item.name })}
                 >
