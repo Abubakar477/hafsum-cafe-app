@@ -51,18 +51,13 @@ function SpecialProductCard({ product, onSelect, isFav, onFav }) {
         <Text style={styles.specialDesc} numberOfLines={2}>{product.description}</Text>
 
         <View style={styles.cardBottomRow}>
-          <View>
-            <Text style={styles.priceLabel}>Starting from</Text>
-            <Text style={styles.priceValue}>Rs. {displayPrice.toLocaleString()}</Text>
-          </View>
-
           <TouchableOpacity
             style={styles.addBtn}
             onPress={() => onSelect(product)}
             activeOpacity={0.85}
           >
             <Ionicons name="add" size={20} color={WHITE} />
-            <Text style={styles.addBtnText}>Add</Text>
+            <Text style={styles.addBtnText}>Add to Cart</Text>
           </TouchableOpacity>
         </View>
       </View>
