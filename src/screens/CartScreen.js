@@ -12,11 +12,7 @@ import { useCart } from '../context/CartContext';
 import { useOrders } from '../context/OrdersContext';
 import { BRANCHES } from '../api/mockData';
 
-const PAYMENT_METHODS = [
-  { id: 'cod',    label: 'Cash on Delivery / Pickup', icon: '💵' },
-  { id: 'card',   label: 'Credit / Debit Card',        icon: '💳' },
-  { id: 'apple',  label: 'Apple Pay',                   icon: '🍎' },
-];
+
 
 // ─── Checkout Modal ───────────────────────────────────────────────────────────
 function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
@@ -25,8 +21,8 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
   const [phone, setPhone]         = useState('');
   const [address, setAddress]     = useState('');
   const [notes, setNotes]         = useState('');
-  const [type, setType]           = useState('delivery'); 
-  const [payment, setPayment]     = useState('cod');
+  const [type, setType]           = useState('delivery');
+  const payment = 'cod';
   const [branch, setBranch]       = useState(BRANCHES[0].id);
 
   const valid = name.trim() && phone.trim() && (type === 'pickup' || address.trim());
@@ -101,16 +97,10 @@ function CheckoutModal({ visible, onClose, onConfirm, total, deliveryFee }) {
           <Field label="Order Notes (optional)" value={notes} onChangeText={setNotes} placeholder="Any special requests?" multiline />
 
           <Text style={styles.section}>Payment Method</Text>
-          {PAYMENT_METHODS.map(pm => (
-            <TouchableOpacity
-              key={pm.id}
-              style={[styles.payRow, payment === pm.id && styles.payRowActive]}
-              onPress={() => setPayment(pm.id)}
-            >
-              <Text style={styles.payIcon}>{pm.icon}</Text>
-              <Text style={[styles.payLabel, payment === pm.id && styles.payLabelActive]}>{pm.label}</Text>
-            </TouchableOpacity>
-          ))}
+          <View style={styles.payRow}>
+            <Text style={styles.payIcon}>💵</Text>
+            <Text style={styles.payLabel}>Cash on Delivery / Pickup</Text>
+          </View>
 
           <Text style={styles.section}>Order Summary</Text>
           <View style={styles.summaryCard}>

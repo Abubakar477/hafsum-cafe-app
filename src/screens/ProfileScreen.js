@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Modal, StatusBar, Alert,
+  TextInput, Modal, StatusBar, Alert, Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,9 +11,30 @@ import { Colors, Spacing, Radii, Shadows } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrdersContext';
 
+const BRANCHES = [
+  {
+    id: 'b1',
+    name: 'Hafsum — Bahria Enclave',
+    address: 'Babu Plaza, 1, Sector A,\nBahria Enclave, Islamabad',
+    hours: '11:00 AM – 11:00 PM',
+    phone: '+92 300 0000000',
+    emoji: '🏢',
+    mapsQuery: 'Babu+Plaza+Sector+A+Bahria+Enclave+Islamabad',
+  },
+  {
+    id: 'b2',
+    name: 'Hafsum — Bahria Phase 4',
+    address: 'Best Western Central Rawalpindi,\nParadise Commercial, Plot 84, Shop 1,\nGround Floor, Bahria Phase 4, Islamabad',
+    hours: '11:00 AM – 11:00 PM',
+    phone: '+92 300 0000000',
+    emoji: '🏨',
+    mapsQuery: 'Best+Western+Central+Rawalpindi+Bahria+Phase+4',
+  },
+];
+
 const SETTINGS = [
   { id: 'notifications', icon: 'notifications-outline',    label: 'Notifications',      type: 'toggle' },
-  { id: 'language',      icon: 'language-outline',          label: 'Language',           type: 'nav',   value: 'English' },
+  { id: 'language',      icon: 'language-outline',          label: 'Language',           type: 'badge',  value: 'English' },
   { id: 'branches',      icon: 'storefront-outline',        label: 'Our Branches',       type: 'nav' },
   { id: 'help',          icon: 'help-circle-outline',       label: 'Help & Support',     type: 'nav' },
   { id: 'privacy',       icon: 'shield-checkmark-outline',  label: 'Privacy Policy',     type: 'nav' },
@@ -105,9 +126,60 @@ function AuthField({ label, value, onChangeText, placeholder, keyboardType, secu
   );
 }
 
-function SettingRow({ item, notifications, onToggle }) {
+// ─── Branches Modal ───────────────────────────────────────────────────────────
+function BranchesModal({ visible, onClose }) {
+  const insets = useSafeAreaInsets();
   return (
-    <TouchableOpacity style={styles.settingRow} activeOpacity={0.75}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.modalOverlay}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+        <View style={[styles.modalSheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+          <View style={styles.modalHandle} />
+          <View style={styles.modalHeaderRow}>
+            <Text style={styles.modalTitle}>Our Branches</Text>
+            <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
+              <Ionicons name="close" size={18} color={Colors.textMuted} />
+            </TouchableOpacity>
+          </View>
+
+          {BRANCHES.map((b, i) => (
+            <View key={b.id} style={[styles.branchCard, i > 0 && { marginTop: 12 }]}>
+              <LinearGradient
+                colors={['#2E1540', '#492760']}
+                style={styles.branchCardHeader}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              >
+                <Text style={styles.branchEmoji}>{b.emoji}</Text>
+                <Text style={styles.branchName}>{b.name}</Text>
+              </LinearGradient>
+              <View style={styles.branchCardBody}>
+                <View style={styles.branchInfoRow}>
+                  <Ionicons name="location-outline" size={16} color={Colors.primary} style={{ marginTop: 1 }} />
+                  <Text style={styles.branchInfoText}>{b.address}</Text>
+                </View>
+                <View style={styles.branchInfoRow}>
+                  <Ionicons name="time-outline" size={16} color={Colors.primary} />
+                  <Text style={styles.branchInfoText}>{b.hours}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.mapsBtn}
+                  onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${b.mapsQuery}`)}
+                >
+                  <Ionicons name="navigate-outline" size={15} color="#fff" style={{ marginRight: 6 }} />
+                  <Text style={styles.mapsBtnText}>Open in Maps</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function SettingRow({ item, notifications, onToggle, onPress }) {
+  return (
+    <TouchableOpacity style={styles.settingRow} activeOpacity={0.75} onPress={onPress}>
       <View style={styles.settingIcon}><Ionicons name={item.icon} size={20} color={Colors.primary} /></View>
       <Text style={styles.settingLabel}>{item.label}</Text>
       <View style={styles.settingRight}>
@@ -115,6 +187,10 @@ function SettingRow({ item, notifications, onToggle }) {
           <TouchableOpacity style={[styles.toggle, notifications && styles.toggleOn]} onPress={onToggle}>
             <View style={[styles.toggleThumb, notifications && styles.toggleThumbOn]} />
           </TouchableOpacity>
+        ) : item.type === 'badge' ? (
+          <View style={styles.langBadge}>
+            <Text style={styles.langBadgeText}>{item.value}</Text>
+          </View>
         ) : (
           <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
         )}
@@ -130,6 +206,11 @@ export default function ProfileScreen({ navigation }) {
   const { orders } = useOrders();
   const [authVisible, setAuthVisible] = useState(false);
   const [notifications, setNotifications] = useState(true);
+  const [branchesVisible, setBranchesVisible] = useState(false);
+
+  const handleSettingPress = (id) => {
+    if (id === 'branches') setBranchesVisible(true);
+  };
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure?', [{ text: 'Cancel' }, { text: 'Sign Out', style: 'destructive', onPress: signOut }]);
@@ -200,7 +281,13 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.sectionTitle}>Settings</Text>
           <View style={styles.card}>
             {SETTINGS.map(item => (
-              <SettingRow key={item.id} item={item} notifications={notifications} onToggle={() => setNotifications(n => !n)} />
+              <SettingRow
+                key={item.id}
+                item={item}
+                notifications={notifications}
+                onToggle={() => setNotifications(n => !n)}
+                onPress={() => handleSettingPress(item.id)}
+              />
             ))}
           </View>
         </View>
@@ -214,6 +301,7 @@ export default function ProfileScreen({ navigation }) {
       </ScrollView>
 
       <AuthModal visible={authVisible} onClose={() => setAuthVisible(false)} onSignIn={signIn} />
+      <BranchesModal visible={branchesVisible} onClose={() => setBranchesVisible(false)} />
     </View>
   );
 }
@@ -266,6 +354,24 @@ const styles = StyleSheet.create({
   toggleOn: { backgroundColor: Colors.primary },
   toggleThumb: { width: 16, height: 16, borderRadius: 8, backgroundColor: Colors.white },
   toggleThumbOn: { alignSelf: 'flex-end' },
+  langBadge: { backgroundColor: Colors.primaryFade, borderRadius: Radii.full, paddingHorizontal: 10, paddingVertical: 3 },
+  langBadgeText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
+  // Branches Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20, paddingTop: 12 },
+  modalHandle: { width: 44, height: 4, borderRadius: 2, backgroundColor: '#E5E7EB', alignSelf: 'center', marginBottom: 18 },
+  modalHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  modalTitle: { fontSize: 18, fontWeight: '800', color: Colors.textPrimary },
+  modalCloseBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' },
+  branchCard: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#EDE7F6' },
+  branchCardHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, gap: 10 },
+  branchEmoji: { fontSize: 22 },
+  branchName: { fontSize: 15, fontWeight: '800', color: '#fff', flex: 1 },
+  branchCardBody: { backgroundColor: '#faf8fc', padding: 14, gap: 8 },
+  branchInfoRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  branchInfoText: { fontSize: 13, color: Colors.textSecondary, flex: 1, lineHeight: 19 },
+  mapsBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.primary, borderRadius: 20, paddingVertical: 8, marginTop: 6 },
+  mapsBtnText: { fontSize: 13, fontWeight: '700', color: '#fff' },
   signOutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 15, backgroundColor: Colors.white, marginHorizontal: 20, borderRadius: Radii.lg, borderWidth: 1, borderColor: Colors.error + '30', gap: 8 },
   signOutText: { fontSize: 15, fontWeight: '700', color: Colors.error },
   authContainer: { flex: 1, backgroundColor: Colors.offWhite },
