@@ -12,11 +12,11 @@ import { useAuth } from '../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
-export default function LoginScreen({ onFinish, selectedLocation }) {
+export default function LoginScreen({ onFinish, selectedLocation, initialTab = 'login' }) {
   const insets = useSafeAreaInsets();
   const { signIn } = useAuth();
 
-  const [tab, setTab] = useState('login');          // 'login' | 'signup'
+  const [tab, setTab] = useState(initialTab);          // 'login' | 'signup'
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -28,7 +28,7 @@ export default function LoginScreen({ onFinish, selectedLocation }) {
   // Entrance animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
-  const tabAnim = useRef(new Animated.Value(0)).current;
+  const tabAnim = useRef(new Animated.Value(initialTab === 'login' ? 0 : 1)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -36,6 +36,19 @@ export default function LoginScreen({ onFinish, selectedLocation }) {
       Animated.spring(slideAnim, { toValue: 0, speed: 14, bounciness: 6, useNativeDriver: true }),
     ]).start();
   }, []);
+
+  // Update tab state if initialTab prop changes
+  useEffect(() => {
+    if (initialTab !== tab) {
+      setTab(initialTab);
+      Animated.spring(tabAnim, {
+        toValue: initialTab === 'login' ? 0 : 1,
+        useNativeDriver: false,
+        speed: 20,
+        bounciness: 0,
+      }).start();
+    }
+  }, [initialTab]);
 
   const switchTab = (t) => {
     setTab(t);
@@ -58,12 +71,23 @@ export default function LoginScreen({ onFinish, selectedLocation }) {
       setError('Please enter your name.');
       return;
     }
+
     setLoading(true);
-    // Simulate auth (replace with real API)
+
+    if (tab === 'signup') {
+      // 1. Registration: Redirect to Login page (Sign In tab)
+      await new Promise(r => setTimeout(r, 1200));
+      setLoading(false);
+      switchTab('login');
+      setPassword(''); // Clear sensitive info
+      return;
+    }
+
+    // 2. Login: Access the main app
     await new Promise(r => setTimeout(r, 1200));
     const userData = {
       id: Date.now().toString(),
-      name: tab === 'signup' ? name.trim() : email.split('@')[0],
+      name: email.split('@')[0],
       email: email.trim(),
       phone: phone.trim(),
       location: selectedLocation,

@@ -1,10 +1,10 @@
 import 'react-native-gesture-handler';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AuthProvider } from './src/context/AuthContext';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { CartProvider } from './src/context/CartContext';
 import { OrdersProvider } from './src/context/OrdersContext';
 import { FavoritesProvider } from './src/context/FavoritesContext';
@@ -19,47 +19,6 @@ import LoginScreen from './src/screens/LoginScreen';
  * Flow: Splash → Location Picker → Login → Main App
  */
 export default function App() {
-  const [appStage, setAppStage] = useState('splash'); // 'splash' | 'location' | 'login' | 'app'
-  const [selectedLocation, setSelectedLocation] = useState(null);
-
-  // 1. Splash Screen
-  if (appStage === 'splash') {
-    return (
-      <SafeAreaProvider>
-        <SplashScreen onFinish={() => setAppStage('location')} />
-      </SafeAreaProvider>
-    );
-  }
-
-  // 2. Location Picker
-  if (appStage === 'location') {
-    return (
-      <SafeAreaProvider>
-        <LocationScreen
-          onFinish={(loc) => {
-            setSelectedLocation(loc);
-            setAppStage('login');
-          }}
-        />
-      </SafeAreaProvider>
-    );
-  }
-
-  // 3. Login / Sign Up
-  if (appStage === 'login') {
-    return (
-      <SafeAreaProvider>
-        <AuthProvider>
-          <LoginScreen
-            selectedLocation={selectedLocation}
-            onFinish={() => setAppStage('app')}
-          />
-        </AuthProvider>
-      </SafeAreaProvider>
-    );
-  }
-
-  // 4. Main App
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -68,9 +27,7 @@ export default function App() {
             <OrdersProvider>
               <CartProvider>
                 <ToastProvider>
-                  <NavigationContainer>
-                    <MainNavigator selectedLocation={selectedLocation} />
-                  </NavigationContainer>
+                  <AppContent />
                 </ToastProvider>
               </CartProvider>
             </OrdersProvider>
@@ -78,5 +35,56 @@ export default function App() {
         </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function AppContent() {
+  const { user, loading } = useAuth();
+  const [appStage, setAppStage] = useState('splash'); // 'splash' | 'location' | 'login' | 'app'
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [initialLoginTab, setInitialLoginTab] = useState('login');
+
+  // Handle auto-navigation on sign out
+  useEffect(() => {
+    if (!loading && !user && appStage === 'app') {
+      setInitialLoginTab('signup');
+      setAppStage('login');
+    }
+  }, [user, loading, appStage]);
+
+  // 1. Splash Screen
+  if (appStage === 'splash') {
+    return <SplashScreen onFinish={() => setAppStage('location')} />;
+  }
+
+  // 2. Location Picker
+  if (appStage === 'location') {
+    return (
+      <LocationScreen
+        onFinish={(loc) => {
+          setSelectedLocation(loc);
+          setInitialLoginTab('login');
+          setAppStage('login');
+        }}
+      />
+    );
+  }
+
+  // 3. Login / Sign Up
+  if (appStage === 'login') {
+    return (
+      <LoginScreen
+        selectedLocation={selectedLocation}
+        initialTab={initialLoginTab}
+        onFinish={() => setAppStage('app')}
+      />
+    );
+  }
+
+  // 4. Main App
+  return (
+    <NavigationContainer>
+      <MainNavigator selectedLocation={selectedLocation} />
+    </NavigationContainer>
   );
 }
