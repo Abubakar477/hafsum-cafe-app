@@ -16,7 +16,6 @@ export const images = {
   lotusBiscoffCake: require('../../assets/images/cake_lotus_biscoff.jpg'),
   mangoCake: require('../../assets/images/cake_mango.jpg'),
   mixedDryFruitCake: require('../../assets/images/cake_mixed_dry_fruit.jpg'),
-  // oreoChocolateCake line yahan se remove kar di gayi hai
   pineappleCake: require('../../assets/images/cake_pineapple.jpg'),
   pistachioCake: require('../../assets/images/cake_pistachio.jpg'),
   raffaelloCake: require('../../assets/images/cake_raffaello.jpg'),
@@ -118,7 +117,7 @@ export const images = {
   pomegranateIcedTea: require('../../assets/images/pomengrate_ice_tea.png'),
 
   // ── NEW SPECIALS ──
-  chocolateOreroCheesecake: require('../../assets/images/chocolateorerocheesecake.jpeg'),
+  chocolateOreoCheesecake: require('../../assets/images/chocolateorerocheesecake.jpeg'),
   newYorkCheesecakeMain: require('../../assets/images/Newyorkcheese cake.jpeg'),
   blueberryCheesecakeMain: require('../../assets/images/cake_blueberry_cheesecake.jpeg'),
   sanSebastianCheesecakeMain: require('../../assets/images/sansebastain Cheese cake.jpeg'),
@@ -149,9 +148,9 @@ export const CATEGORIES = [
 
 export const PRODUCTS = [
   // ── SPECIAL ITEMS (HOME SCREEN) ──
-  { id: 'sp-1', name: 'chocolate orero cheese cake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.chocolateOreroCheesecake, description: 'Creamy cheesecake blended with Oreo chunks on a dark chocolate crust.', isSpecial: true,
+  { id: 'sp-1', name: 'chocolate oreo cheese cake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.chocolateOreoCheesecake, description: 'Creamy cheesecake blended with Oreo chunks on a dark chocolate crust.', isSpecial: true,
     sizes: [{ id: 'slice', label: 'Per Slice', price: 825 }, { id: '2.5lb', label: 'Whole (2.5 lb)', price: 6500 }] },
-  { id: 'sp-2', name: 'New York CHeese cake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.newYorkCheesecakeMain, description: 'Classic dense and creamy New York style cheesecake.', isSpecial: true,
+  { id: 'sp-2', name: 'New York Cheese cake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.newYorkCheesecakeMain, description: 'Classic dense and creamy New York style cheesecake.', isSpecial: true,
     sizes: [{ id: 'slice', label: 'Per Slice', price: 825 }, { id: '2.5lb', label: 'Whole (2.5 lb)', price: 6500 }] },
   { id: 'sp-3', name: 'Blue berry cheese cake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.blueberryCheesecakeMain, description: 'Smooth cheesecake topped with fresh house-made blueberry compote.', isSpecial: true,
     sizes: [{ id: 'slice', label: 'Per Slice', price: 825 }, { id: '2.5lb', label: 'Whole (2.5 lb)', price: 6500 }] },
@@ -197,7 +196,7 @@ export const PRODUCTS = [
   { id: 's-3', name: 'Mini Pizza', categoryId: 'savories', price: 500, image: images.miniPizza, description: 'Individual sized pizza.' },
 
   // ── PASTA ──
-  { id: 'pa-1', name: 'Lasagna', categoryId: 'pasta', price: 1199, image: images.lasangna, description: 'Layered meat and pasta bake.' },
+  { id: 'pa-1', name: 'Lasagna', categoryId: 'pasta', price: 1199 , image: images.lasangna, description: 'Layered meat and pasta bake.' },
   { id: 'pa-2', name: 'Cheesy Pasta Bake', categoryId: 'pasta', price: 1250, image: images.cheesyPasta, description: 'Rich white sauce cheesy pasta.' },
 
   // ── COLD SANDWICHES ──

@@ -13,6 +13,13 @@ import MainNavigator from './src/navigation/MainNavigator';
 import SplashScreen from './src/screens/SplashScreen';
 import LocationScreen from './src/screens/LocationScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+} from '@expo-google-fonts/poppins';
 
 /**
  * Hafsum Coffee App - Main Entry Point
@@ -44,6 +51,15 @@ function AppContent() {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [initialLoginTab, setInitialLoginTab] = useState('login');
 
+  const [fontsLoaded] = useFonts({
+    'Poppins-Regular': Poppins_400Regular,
+    'Poppins-Medium': Poppins_500Medium,
+    'Poppins-SemiBold': Poppins_600SemiBold,
+    'Poppins-Bold': Poppins_700Bold,
+  });
+
+  const [splashFinished, setSplashFinished] = useState(false);
+
   // Handle auto-navigation on sign out
   useEffect(() => {
     if (!loading && !user && appStage === 'app') {
@@ -52,9 +68,21 @@ function AppContent() {
     }
   }, [user, loading, appStage]);
 
+  // Handle auto-login on startup when splash has finished, fonts are loaded, and auth is not loading
+  useEffect(() => {
+    if (splashFinished && fontsLoaded && !loading) {
+      if (user) {
+        setSelectedLocation(user.location);
+        setAppStage('app');
+      } else {
+        setAppStage('location');
+      }
+    }
+  }, [splashFinished, fontsLoaded, loading, user]);
+
   // 1. Splash Screen
   if (appStage === 'splash') {
-    return <SplashScreen onFinish={() => setAppStage('location')} />;
+    return <SplashScreen onFinish={() => setSplashFinished(true)} />;
   }
 
   // 2. Location Picker

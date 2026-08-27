@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)',
   },
   logoEmoji: { fontSize: 36 },
-  logoText: { fontSize: 34, fontWeight: '900', color: '#fff', letterSpacing: 2 },
+  logoText: { fontSize: 34, fontWeight: '900', color: '#fff', letterSpacing: 2, fontFamily: 'Poppins-Bold' },
   logoSub: { fontSize: 12, color: 'rgba(255,255,255,0.6)', letterSpacing: 4, marginTop: 2 },
   locPill: {
     flexDirection: 'row', alignItems: 'center',

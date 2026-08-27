@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   authHeaderRow: { marginBottom: 15 },
   authLogoArea: { alignItems: 'center' },
   authEmoji: { fontSize: 32, marginBottom: 4 },
-  authLogoName: { fontSize: 32, fontWeight: '800', fontStyle: 'italic', color: Colors.white },
+  authLogoName: { fontSize: 32, fontWeight: '800', fontStyle: 'italic', color: Colors.white, fontFamily: 'Poppins-Bold' },
   authLogoSub: { fontSize: 9, fontWeight: '700', color: 'rgba(255,255,255,0.7)', letterSpacing: 2.5 },
   authScroll: { flex: 1 },
   modeTabs: { flexDirection: 'row', backgroundColor: Colors.white, borderRadius: Radii.full, margin: 20, padding: 4, ...Shadows.sm },

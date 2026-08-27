@@ -9,10 +9,12 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
-const LOCATIONS = [
+// Export LOCATIONS so other components can access the branch list
+export const LOCATIONS = [
   {
     id: 'dha',
     area: 'DHA Phase 5',
@@ -67,6 +69,25 @@ export default function LocationScreen({ onFinish }) {
   const slideAnim = useRef(new Animated.Value(60)).current;
   const pinBounce = useRef(new Animated.Value(0)).current;
 
+  // Load saved location on mount
+  useEffect(() => {
+    const loadSavedLocation = async () => {
+      try {
+        const savedLoc = await AsyncStorage.getItem('@hafsum_location');
+        if (savedLoc) {
+          const parsed = JSON.parse(savedLoc);
+          const matched = LOCATIONS.find(l => l.id === parsed.id);
+          if (matched) {
+            setSelected(matched);
+          }
+        }
+      } catch (e) {
+        console.log('Error loading location:', e);
+      }
+    };
+    loadSavedLocation();
+  }, []);
+
   useEffect(() => {
     // Fade + slide in
     Animated.parallel([
@@ -85,6 +106,8 @@ export default function LocationScreen({ onFinish }) {
 
   const handleContinue = () => {
     if (!selected) return;
+    AsyncStorage.setItem('@hafsum_location', JSON.stringify(selected))
+      .catch(e => console.log('Error saving location:', e));
     Animated.timing(fadeAnim, { toValue: 0, duration: 250, useNativeDriver: true }).start(() => {
       onFinish(selected);
     });

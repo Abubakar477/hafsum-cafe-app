@@ -21,6 +21,9 @@ import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { useToast } from '../components/ToastNotification';
 import { PRODUCTS } from '../api/mockData';
+import { useAuth } from '../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LOCATIONS } from './LocationScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -205,9 +208,13 @@ export default function HomeScreen({ navigation }) {
   const { dispatch, itemCount } = useCart();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const { showToast } = useToast();
+  const { user, updateProfile } = useAuth();
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+
+  const selectedLocation = user?.location;
 
   const handleOpenModal = (product) => {
     setSelectedProduct(product);
@@ -222,6 +229,20 @@ export default function HomeScreen({ navigation }) {
     showToast(`✓ ${product.name} (${size.label}) added to cart!`);
   };
 
+  const handleSelectBranch = async (loc) => {
+    try {
+      await AsyncStorage.setItem('@hafsum_location', JSON.stringify(loc));
+      if (updateProfile) {
+        await updateProfile({ location: loc });
+      }
+      showToast(`📍 Switched to branch: ${loc.area}`);
+    } catch (e) {
+      console.log('Error changing location:', e);
+    } finally {
+      setDropdownVisible(false);
+    }
+  };
+
   const specialItems = PRODUCTS.filter(p => p.isSpecial);
 
   return (
@@ -234,12 +255,28 @@ export default function HomeScreen({ navigation }) {
         style={[styles.header, { paddingTop: insets.top + 10 }]}
       >
         <View style={styles.headerRow}>
-          {/* Logo in the Left Corner */}
-          <Image
-            source={require('../../assets/images/topheaderlogo.jpeg')}
-            style={styles.cornerLogo}
-            resizeMode="contain"
-          />
+          {/* Left Column containing Location Selector & Logo */}
+          <View style={styles.headerLeftCol}>
+            {/* Branch Selector Dropdown */}
+            <TouchableOpacity
+              onPress={() => setDropdownVisible(true)}
+              style={styles.dropdownBtn}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="location" size={14} color="#C9963A" style={{ marginRight: 4 }} />
+              <Text style={styles.dropdownBtnText}>
+                {selectedLocation ? selectedLocation.area : 'Select Branch'}
+              </Text>
+              <Ionicons name="chevron-down" size={12} color={WHITE} style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+
+            {/* Logo in the Left Corner */}
+            <Image
+              source={require('../../assets/images/topheaderlogo.jpeg')}
+              style={styles.cornerLogo}
+              resizeMode="contain"
+            />
+          </View>
 
           {/* Cart Icon in the Right Corner */}
           <TouchableOpacity onPress={() => navigation.navigate('Cart')} activeOpacity={0.8}>
@@ -250,6 +287,62 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </LinearGradient>
+
+      {/* Custom Dropdown Modal */}
+      <Modal
+        visible={dropdownVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setDropdownVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.dropdownModalOverlay}
+          activeOpacity={1}
+          onPress={() => setDropdownVisible(false)}
+        >
+          <View style={styles.dropdownModalCard}>
+            <Text style={styles.dropdownModalTitle}>Select Cafe Branch</Text>
+            <View style={styles.dropdownModalDivider} />
+            {LOCATIONS.map((loc) => {
+              const isSelected = selectedLocation?.id === loc.id;
+              return (
+                <TouchableOpacity
+                  key={loc.id}
+                  style={[
+                    styles.dropdownModalItem,
+                    isSelected && styles.dropdownModalItemSelected,
+                  ]}
+                  onPress={() => handleSelectBranch(loc)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name={isSelected ? 'location' : 'location-outline'}
+                    size={20}
+                    color={isSelected ? '#492760' : '#6B5F7A'}
+                    style={{ marginRight: 12 }}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[
+                        styles.dropdownModalItemText,
+                        isSelected && styles.dropdownModalItemTextSelected,
+                      ]}
+                    >
+                      {loc.area}
+                    </Text>
+                    <Text style={styles.dropdownModalItemSubText}>{loc.address}</Text>
+                  </View>
+                  {isSelected && (
+                    <View style={styles.dropdownCheckCircle}>
+                      <Ionicons name="checkmark" size={14} color="#fff" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -552,4 +645,89 @@ const styles = StyleSheet.create({
   favItem: { width: 80, marginRight: 15, alignItems: 'center' },
   favImage: { width: 70, height: 70, borderRadius: 35, borderWidth: 2, borderColor: PRIMARY },
   favName: { fontSize: 11, color: TEXT, fontWeight: '600', marginTop: 6, textAlign: 'center' },
+
+  headerLeftCol: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  dropdownBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 6,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  dropdownBtnText: {
+    color: WHITE,
+    fontSize: 12,
+    fontFamily: 'Poppins-Medium',
+  },
+  dropdownModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(26,13,46,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  dropdownModalCard: {
+    width: '100%',
+    backgroundColor: WHITE,
+    borderRadius: 24,
+    padding: 20,
+    ...Shadows.lg,
+  },
+  dropdownModalTitle: {
+    fontSize: 18,
+    fontFamily: 'Poppins-Bold',
+    color: TEXT,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  dropdownModalDivider: {
+    height: 1,
+    backgroundColor: '#F3E8FF',
+    marginBottom: 16,
+  },
+  dropdownModalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 10,
+    backgroundColor: '#F9F5FF',
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  dropdownModalItemSelected: {
+    borderColor: '#492760',
+    backgroundColor: '#F3E8FF',
+  },
+  dropdownModalItemText: {
+    fontSize: 14,
+    fontFamily: 'Poppins-SemiBold',
+    color: TEXT,
+  },
+  dropdownModalItemTextSelected: {
+    color: '#492760',
+  },
+  dropdownModalItemSubText: {
+    fontSize: 11,
+    fontFamily: 'Poppins-Regular',
+    color: MUTED,
+    marginTop: 2,
+  },
+  dropdownCheckCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#492760',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
 });
