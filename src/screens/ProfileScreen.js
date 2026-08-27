@@ -33,12 +33,9 @@ const BRANCHES = [
 ];
 
 const SETTINGS = [
-  { id: 'notifications', icon: 'notifications-outline',    label: 'Notifications',      type: 'toggle' },
-  { id: 'language',      icon: 'language-outline',          label: 'Language',           type: 'badge',  value: 'English' },
-  { id: 'branches',      icon: 'storefront-outline',        label: 'Our Branches',       type: 'nav' },
-  { id: 'help',          icon: 'help-circle-outline',       label: 'Help & Support',     type: 'nav' },
-  { id: 'privacy',       icon: 'shield-checkmark-outline',  label: 'Privacy Policy',     type: 'nav' },
-  { id: 'about',         icon: 'information-circle-outline',label: 'About Hafsum',       type: 'nav' },
+  { id: 'notifications', icon: 'notifications-outline', label: 'Notifications', type: 'toggle' },
+  { id: 'language',      icon: 'language-outline',       label: 'Language',      type: 'badge', value: 'English' },
+  { id: 'branches',      icon: 'storefront-outline',     label: 'Our Branches',  type: 'nav' },
 ];
 
 // ─── Guest Sign-In Modal ──────────────────────────────────────────────────────
@@ -212,9 +209,6 @@ export default function ProfileScreen({ navigation }) {
     if (id === 'branches') setBranchesVisible(true);
   };
 
-  const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure?', [{ text: 'Cancel' }, { text: 'Sign Out', style: 'destructive', onPress: signOut }]);
-  };
 
   const completedOrders = orders.filter(o => o.status === 'completed').length;
   const totalSpend = orders.reduce((s, o) => s + o.total, 0);
@@ -291,13 +285,6 @@ export default function ProfileScreen({ navigation }) {
             ))}
           </View>
         </View>
-
-        {user && (
-          <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut}>
-            <Ionicons name="log-out-outline" size={20} color={Colors.error} />
-            <Text style={styles.signOutText}>Sign Out</Text>
-          </TouchableOpacity>
-        )}
       </ScrollView>
 
       <AuthModal visible={authVisible} onClose={() => setAuthVisible(false)} onSignIn={signIn} />
