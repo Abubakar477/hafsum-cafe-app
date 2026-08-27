@@ -25,105 +25,45 @@ const splashImage = require('../../assets/images/hafsum_splash.jpg');
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function SplashScreen({ onFinish }) {
-
-  const fadeAnim = useRef(
-    new Animated.Value(0)
-  ).current;
-
-
-  const finishedRef = useRef(false);
-
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const onFinishRef = useRef(onFinish);
+  onFinishRef.current = onFinish;
 
   useEffect(() => {
-
     let mounted = true;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // FADE IN
-    // ─────────────────────────────────────────────────────────────────────────
-
+    // Fade In
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 800,
+      duration: 700,
       useNativeDriver: Platform.OS !== 'web',
     }).start();
 
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // KEEP SPLASH VISIBLE
-    // Then open main app automatically.
-    //
-    // IMPORTANT:
-    // We do NOT depend on the animation callback anymore.
-    // This makes it reliable on localhost/web as well as Android.
-    // ─────────────────────────────────────────────────────────────────────────
-
+    // After 2 seconds, fade out and finish
     const timer = setTimeout(() => {
-
-      if (!mounted || finishedRef.current) {
-        return;
-      }
-
-
-      finishedRef.current = true;
-
-
-      // ───────────────────────────────────────────────────────────────────────
-      // FADE OUT
-      // ───────────────────────────────────────────────────────────────────────
+      if (!mounted) return;
 
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 500,
+        duration: 400,
         useNativeDriver: Platform.OS !== 'web',
       }).start();
 
-
-      // ───────────────────────────────────────────────────────────────────────
-      // OPEN MAIN NAVIGATOR
-      //
-      // Small delay allows fade-out to begin before changing screen.
-      // ───────────────────────────────────────────────────────────────────────
-
       const finishTimer = setTimeout(() => {
-
-        if (!mounted) {
-          return;
+        if (!mounted) return;
+        if (typeof onFinishRef.current === 'function') {
+          onFinishRef.current();
         }
+      }, 400);
 
-        console.log(
-          'Splash finished - opening MainNavigator'
-        );
-
-
-        if (typeof onFinish === 'function') {
-          onFinish();
-        }
-
-      }, 500);
-
-
-      // Store finish timer for cleanup
-      return () => {
-        clearTimeout(finishTimer);
-      };
-
-    }, 2300);
-
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // CLEANUP
-    // ─────────────────────────────────────────────────────────────────────────
+      return () => clearTimeout(finishTimer);
+    }, 2000);
 
     return () => {
-
       mounted = false;
-
       clearTimeout(timer);
-
     };
-
-  }, [fadeAnim, onFinish]);
+  }, [fadeAnim]);
 
 
   // ───────────────────────────────────────────────────────────────────────────
