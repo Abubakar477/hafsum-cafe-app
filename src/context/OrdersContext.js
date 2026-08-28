@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../firebase/config';
 import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { triggerOrderNotification } from '../services/notificationService';
 import { MOCK_ORDERS } from '../api/mockData';
 
 const OrdersContext = createContext(null);
@@ -77,6 +78,13 @@ export function OrdersProvider({ children }) {
       console.log('Order successfully synced to Cloud Firestore:', orderId);
     } catch (e) {
       console.log('Order saved locally (Firestore offline/sync error):', e?.message);
+    }
+
+    // Trigger Push / FCM Notification on device
+    try {
+      await triggerOrderNotification({ orderId, status: 'received', total });
+    } catch (notifErr) {
+      console.log('Notification trigger error:', notifErr);
     }
 
     return newOrder;
