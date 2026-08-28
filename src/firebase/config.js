@@ -26,7 +26,6 @@ try {
     persistence: getReactNativePersistence(AsyncStorage)
   });
 } catch (e) {
-  // If already initialized
   auth = getAuth(app);
 }
 

@@ -12,7 +12,6 @@ const TOKEN_KEY = '@hafsum_push_token';
 // Configure how notifications are displayed when the app is in the foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
@@ -36,7 +35,6 @@ export async function registerForPushNotificationsAsync(userId = null) {
     });
   }
 
-  if (Device.isDevice) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
@@ -50,34 +48,23 @@ export async function registerForPushNotificationsAsync(userId = null) {
       return null;
     }
 
-    try {
-      const tokenData = await Notifications.getExpoPushTokenAsync();
-      token = tokenData.data;
       await AsyncStorage.setItem(TOKEN_KEY, token);
 
       // Save token to Cloud Firestore
-      if (token) {
         const tokenId = token.replace(/[^a-zA-Z0-9]/g, '_');
         await setDoc(doc(db, 'push_tokens', tokenId), {
           token,
           userId: userId || 'anonymous',
           platform: Platform.OS,
           updatedAt: new Date().toISOString(),
-        }, { merge: true });
 
-        // If user is signed in, also attach to their user doc in Firestore
         if (userId) {
           await setDoc(doc(db, 'users', userId), {
             fcmToken: token,
             pushTokenUpdatedAt: new Date().toISOString(),
-          }, { merge: true });
         }
       }
     } catch (error) {
-      console.log('Error getting push token:', error?.message);
-    }
-  } else {
-    console.log('Must use physical device for push notifications');
   }
 
   return token;
@@ -109,7 +96,6 @@ export async function triggerOrderNotification({ orderId, status = 'received', t
         data: { orderId, status },
         sound: 'default',
       },
-      trigger: null, // trigger immediately
     });
   } catch (err) {
     console.log('Notification trigger error:', err?.message);

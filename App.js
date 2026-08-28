@@ -1,14 +1,15 @@
 import 'react-native-gesture-handler';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AuthProvider } from './src/context/AuthContext';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { CartProvider } from './src/context/CartContext';
 import { OrdersProvider } from './src/context/OrdersContext';
 import { FavoritesProvider } from './src/context/FavoritesContext';
 import { ToastProvider } from './src/components/ToastNotification';
+import { registerForPushNotificationsAsync } from './src/services/notificationService';
 import MainNavigator from './src/navigation/MainNavigator';
 import SplashScreen from './src/screens/SplashScreen';
 import LocationScreen from './src/screens/LocationScreen';
@@ -52,8 +53,18 @@ export default function App() {
 }
 
 function AppContent() {
+  const { user } = useAuth();
   const [appStage, setAppStage] = useState('splash'); // 'splash' | 'location' | 'app'
   const [selectedLocation, setSelectedLocation] = useState(null);
+
+  // Register for Push Notifications & FCM when app is active
+  useEffect(() => {
+    if (appStage === 'app') {
+      registerForPushNotificationsAsync(user?.uid).catch((err) =>
+        console.log('Push notification setup note:', err?.message)
+      );
+    }
+  }, [appStage, user?.uid]);
 
   // 1. Splash Screen — displays once on launch
   if (appStage === 'splash') {
