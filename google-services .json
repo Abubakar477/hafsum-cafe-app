@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "73936906664",
+    "project_id": "hafsum-mobile-app",
+    "storage_bucket": "hafsum-mobile-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:73936906664:android:3d183e7e37456be5bad59d",
+        "android_client_info": {
+          "package_name": "com.hafsum.cafe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWLGNFuAmf8NT-1Odn8YbYx0UBRDbrppI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

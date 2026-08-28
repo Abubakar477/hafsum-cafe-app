@@ -1,10 +1,10 @@
 import 'react-native-gesture-handler';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AuthProvider } from './src/context/AuthContext';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { CartProvider } from './src/context/CartContext';
 import { OrdersProvider } from './src/context/OrdersContext';
 import { FavoritesProvider } from './src/context/FavoritesContext';
@@ -12,26 +12,13 @@ import { ToastProvider } from './src/components/ToastNotification';
 import MainNavigator from './src/navigation/MainNavigator';
 import SplashScreen from './src/screens/SplashScreen';
 import LocationScreen from './src/screens/LocationScreen';
-import {
-  useFonts,
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_600SemiBold,
-  Poppins_700Bold,
-} from '@expo-google-fonts/poppins';
+import LoginScreen from './src/screens/LoginScreen';
 
 /**
  * Hafsum Coffee App - Main Entry Point
- * Flow: Splash Screen (once) → Location Picker (Always) → Main App
+ * Flow: Splash → Location Picker → Login → Main App
  */
 export default function App() {
-  const [fontsLoaded] = useFonts({
-    'Poppins-Regular': Poppins_400Regular,
-    'Poppins-Medium': Poppins_500Medium,
-    'Poppins-SemiBold': Poppins_600SemiBold,
-    'Poppins-Bold': Poppins_700Bold,
-  });
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -40,7 +27,7 @@ export default function App() {
             <OrdersProvider>
               <CartProvider>
                 <ToastProvider>
-                  <AppContent fontsLoaded={fontsLoaded} />
+                  <AppContent />
                 </ToastProvider>
               </CartProvider>
             </OrdersProvider>
@@ -52,33 +39,49 @@ export default function App() {
 }
 
 function AppContent() {
-  const [appStage, setAppStage] = useState('splash'); // 'splash' | 'location' | 'app'
+  const { user, loading } = useAuth();
+  const [appStage, setAppStage] = useState('splash'); // 'splash' | 'location' | 'login' | 'app'
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [initialLoginTab, setInitialLoginTab] = useState('login');
 
-  // 1. Splash Screen — displays once on launch
+  // Handle auto-navigation on sign out
+  useEffect(() => {
+    if (!loading && !user && appStage === 'app') {
+      setInitialLoginTab('signup');
+      setAppStage('login');
+    }
+  }, [user, loading, appStage]);
+
+  // 1. Splash Screen
   if (appStage === 'splash') {
-    return (
-      <SplashScreen
-        onFinish={() => {
-          setAppStage('location');
-        }}
-      />
-    );
+    return <SplashScreen onFinish={() => setAppStage('location')} />;
   }
 
-  // 2. Location Picker — ALWAYS shown after splash
+  // 2. Location Picker
   if (appStage === 'location') {
     return (
       <LocationScreen
         onFinish={(loc) => {
           setSelectedLocation(loc);
-          setAppStage('app');
+          setInitialLoginTab('login');
+          setAppStage('login');
         }}
       />
     );
   }
 
-  // 3. Main App
+  // 3. Login / Sign Up
+  if (appStage === 'login') {
+    return (
+      <LoginScreen
+        selectedLocation={selectedLocation}
+        initialTab={initialLoginTab}
+        onFinish={() => setAppStage('app')}
+      />
+    );
+  }
+
+  // 4. Main App
   return (
     <NavigationContainer>
       <MainNavigator selectedLocation={selectedLocation} />
