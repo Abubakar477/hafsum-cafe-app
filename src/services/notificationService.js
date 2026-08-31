@@ -2,6 +2,7 @@
 // ─── Firebase Cloud Messaging & Notifications Service ────────────────────────
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { db } from '../firebase/config';
 import { doc, setDoc } from 'firebase/firestore';
@@ -12,6 +13,8 @@ const TOKEN_KEY = '@hafsum_push_token';
 // Configure how notifications are displayed when the app is in the foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
@@ -35,6 +38,7 @@ export async function registerForPushNotificationsAsync(userId = null) {
     });
   }
 
+  try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
@@ -48,23 +52,32 @@ export async function registerForPushNotificationsAsync(userId = null) {
       return null;
     }
 
+    // Pass Expo Project ID (from app.json / Constants)
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId || 'hafsum-mobile-app';
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId }).catch(() => null);
+    token = tokenData?.data || null;
+
+    if (token) {
       await AsyncStorage.setItem(TOKEN_KEY, token);
 
       // Save token to Cloud Firestore
-        const tokenId = token.replace(/[^a-zA-Z0-9]/g, '_');
-        await setDoc(doc(db, 'push_tokens', tokenId), {
-          token,
-          userId: userId || 'anonymous',
-          platform: Platform.OS,
-          updatedAt: new Date().toISOString(),
+      const tokenId = token.replace(/[^a-zA-Z0-9]/g, '_');
+      await setDoc(doc(db, 'push_tokens', tokenId), {
+        token,
+        userId: userId || 'anonymous',
+        platform: Platform.OS,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true }).catch(() => {});
 
-        if (userId) {
-          await setDoc(doc(db, 'users', userId), {
-            fcmToken: token,
-            pushTokenUpdatedAt: new Date().toISOString(),
-        }
+      if (userId) {
+        await setDoc(doc(db, 'users', userId), {
+          fcmToken: token,
+          pushTokenUpdatedAt: new Date().toISOString(),
+        }, { merge: true }).catch(() => {});
       }
-    } catch (error) {
+    }
+  } catch (error) {
+    console.log('Push notification setup note:', error?.message);
   }
 
   return token;
@@ -96,6 +109,7 @@ export async function triggerOrderNotification({ orderId, status = 'received', t
         data: { orderId, status },
         sound: 'default',
       },
+      trigger: null,
     });
   } catch (err) {
     console.log('Notification trigger error:', err?.message);

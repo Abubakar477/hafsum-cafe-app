@@ -135,16 +135,16 @@ export const CATEGORIES = [
 export const PRODUCTS = [
   // ── SPECIAL ITEMS (HOME SCREEN - BIG SIZE) ──
   {
-    id: 'sp-1', name: 'chocolate orero cheese cake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.chocolateorerocheesecake, isSpecial: true, sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], description: 'Creamy cheesecake blended with Oreo chunks on a dark chocolate crust.'
+    id: 'sp-1', name: 'Chocolate Oreo Cheesecake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.chocolateorerocheesecake, isSpecial: true, sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], description: 'Creamy cheesecake blended with Oreo chunks on a dark chocolate crust.'
   },
   {
-    id: 'sp-2', name: 'New York CHeese cake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.Newyorkcheese_cake, isSpecial: true, sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], description: 'Classic dense and creamy New York style cheesecake.'
+    id: 'sp-2', name: 'New York Cheesecake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.Newyorkcheese_cake, isSpecial: true, sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], description: 'Classic dense and creamy New York style cheesecake.'
   },
   {
-    id: 'sp-3', name: 'Blue berry cheese cake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.cake_blueberry_cheesecake, isSpecial: true, sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], description: 'Smooth cheesecake topped with fresh house-made blueberry compote.'
+    id: 'sp-3', name: 'Blueberry Cheesecake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.cake_blueberry_cheesecake, isSpecial: true, sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], description: 'Smooth cheesecake topped with fresh house-made blueberry compote.'
   },
   {
-    id: 'sp-4', name: 'san sebastain Cheese cake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.sansebastain_Cheese_cake, isSpecial: true, sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], description: 'The famous burnt Basque cheesecake with a creamy molten center.'
+    id: 'sp-4', name: 'San Sebastian Cheesecake', categoryId: 'cheesecakes', price: 6500, slicePrice: 825, image: images.sansebastain_Cheese_cake, isSpecial: true, sizes: [{ id: 'slice', label: 'Slice', price: 825 }, { id: '2.5lb', label: '2.5 lb', price: 6500 }], description: 'The famous burnt Basque cheesecake with a creamy molten center.'
   },
 
   // ── CAKES ──
@@ -202,7 +202,7 @@ export const PRODUCTS = [
   { id: 'br-1', name: 'Danish Pastry', categoryId: 'bread', price: 350, image: images.Dannish_Pastry, description: 'Flaky seasonal Danish pastry.' },
   { id: 'br-2', name: 'Milky Bread', categoryId: 'bread', price: 250, image: images.Milky_Bread, description: 'Soft and sweet milky loaf.' },
   { id: 'br-3', name: 'Multigrain Bread', categoryId: 'bread', price: 450, image: images.Multi_Grain_bread, description: 'Healthy grain packed bread.' },
-  { id: 'br-4', name: 'SourDough Bread', categoryId: 'bread', price: 499, image: images.Sour_dough_1, description: 'Artisanal sourdough loaf.' },
+  { id: 'br-4', name: 'Sourdough Bread', categoryId: 'bread', price: 499, image: images.Sour_dough_1, description: 'Artisanal sourdough loaf.' },
 
   // ── SAVORIES ──
   { id: 's-1', name: 'Chicken & Potato Patties - 1pc', categoryId: 'savories', price: 325, image: images.Chicken_and_Potato_Patties, description: 'Crispy fried snack.' },
@@ -215,7 +215,7 @@ export const PRODUCTS = [
 
   // ── COLD SANDWICHES ──
   { id: 'cs-1', name: 'Grilled Chicken & Cheese Sandwich', categoryId: 'sandwiches', price: 575, image: images.Grilled_CHicken_and_cheese_sandwich, description: 'Toasted sandwich with grilled chicken and melted cheese.' },
-  { id: 'cs-2', name: 'ChickenSalad Sandwich', categoryId: 'sandwiches', price: 550, image: images.Chicken_salad_snadwich, description: 'Fresh chicken salad filling.' },
+  { id: 'cs-2', name: 'Chicken Salad Sandwich', categoryId: 'sandwiches', price: 550, image: images.Chicken_salad_snadwich, description: 'Fresh chicken salad filling.' },
 
   // ── HOT COFFEE ──
   { id: 'hc-1', name: 'Americano', categoryId: 'hot-coffee', price: 499, image: images.Americano, description: 'Classic hot Americano.' },
