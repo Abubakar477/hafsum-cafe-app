@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal,
-  Animated, ScrollView, Dimensions, StatusBar, Linking, Alert,
+  Animated, ScrollView, Dimensions, StatusBar, Linking, Alert, Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radii } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrdersContext';
+import { LOCATIONS } from '../screens/LocationScreen';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DRAWER_WIDTH = SCREEN_WIDTH * 0.80;
@@ -43,6 +44,7 @@ export default function DrawerMenu({ visible, onClose, navigation }) {
   const [branchesExpanded, setBranchesExpanded] = useState(false);
   const [authVisible, setAuthVisible] = useState(false);
   const [notifications, setNotifications] = useState(true);
+  const [selectedBranch, setSelectedBranch] = useState(LOCATIONS[0]);
 
   const completedOrders = orders.filter(o => o.status === 'completed').length;
   const totalSpend = orders.reduce((s, o) => s + (o.total || 0), 0);
@@ -108,30 +110,33 @@ export default function DrawerMenu({ visible, onClose, navigation }) {
             <Ionicons name="close" size={22} color="rgba(255,255,255,0.7)" />
           </TouchableOpacity>
 
-          {/* Logo row */}
-          <View style={styles.logoRow}>
-            <Text style={styles.logoEmoji}>☕</Text>
-            <View>
-              <Text style={styles.logoName}>Hafsum</Text>
-              <Text style={styles.logoSub}>COFFEE & CAKE</Text>
-            </View>
-          </View>
+          {/* Logo image (same as home page) */}
+          <Image
+            source={require('../../assets/images/topheaderlogo.jpeg')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
 
-          {/* Avatar */}
-          <View style={styles.avatarRow}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {user ? user.name?.charAt(0)?.toUpperCase() : '?'}
-              </Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.userName} numberOfLines={1}>
-                {user ? user.name : 'Welcome to Hafsum'}
-              </Text>
-              <Text style={styles.userSub} numberOfLines={1}>
-                {user ? (user.phone || user.email || 'Hafsum Member') : 'Sign in to your account'}
-              </Text>
-            </View>
+          {/* Choose Location */}
+          <View style={styles.locationSection}>
+            <Text style={styles.locationLabel}>📍 Choose Location</Text>
+            {LOCATIONS.map((loc) => (
+              <TouchableOpacity
+                key={loc.id}
+                style={[styles.locationBtn, selectedBranch?.id === loc.id && styles.locationBtnActive]}
+                onPress={() => setSelectedBranch(loc)}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name={selectedBranch?.id === loc.id ? 'radio-button-on' : 'radio-button-off'}
+                  size={18}
+                  color={selectedBranch?.id === loc.id ? '#fff' : 'rgba(255,255,255,0.6)'}
+                />
+                <Text style={[styles.locationBtnText, selectedBranch?.id === loc.id && styles.locationBtnTextActive]}>
+                  {loc.area}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
           {/* Stats row */}
@@ -264,6 +269,43 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     padding: 4,
     marginBottom: 8,
+  },
+  headerLogo: {
+    width: '80%',
+    height: 55,
+    alignSelf: 'center',
+    marginBottom: 14,
+  },
+  locationSection: {
+    marginBottom: 6,
+  },
+  locationLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.7)',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  locationBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginBottom: 4,
+  },
+  locationBtnActive: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+  locationBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.65)',
+    flex: 1,
+  },
+  locationBtnTextActive: {
+    color: '#fff',
   },
   logoRow: {
     flexDirection: 'row',
