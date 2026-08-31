@@ -92,14 +92,20 @@ export async function triggerOrderNotification({ orderId, status = 'received', t
     let body = `Your order #${orderId} is being processed.`;
 
     if (status === 'received') {
-      title = '🎉 Order Confirmed!';
-      body = `Your order #${orderId} for Rs. ${total?.toLocaleString?.() || total} has been received by Hafsum. We are preparing it fresh!`;
+      title = '🎉 Order Received!';
+      body = `Your order #${orderId} for Rs. ${total?.toLocaleString?.() || total} has been received by Hafsum.`;
+    } else if (status === 'confirmed') {
+      title = '👍 Order Confirmed';
+      body = `Your order #${orderId} has been confirmed. We'll start preparing it shortly.`;
     } else if (status === 'preparing') {
       title = '👩‍🍳 Order is Being Prepared';
       body = `Our chefs are handcrafting your order #${orderId} with love.`;
     } else if (status === 'ready') {
       title = '✨ Order Ready!';
       body = `Your Hafsum order #${orderId} is ready for pickup/dispatch.`;
+    } else if (status === 'completed') {
+      title = '☕ Order Completed';
+      body = `Your order #${orderId} is complete. Thank you for choosing Hafsum!`;
     }
 
     await Notifications.scheduleNotificationAsync({

@@ -1,5 +1,5 @@
 // ─── My Orders Screen ─────────────────────────────────────────────────────────
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   Modal, ScrollView, StatusBar,
@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radii, Shadows } from '../theme';
-import { useOrders } from '../context/OrdersContext';
+import { useOrders, deriveOrderStatus } from '../context/OrdersContext';
 
 const STATUS_CONFIG = {
   received:   { label: 'Received',       color: Colors.statusReceived,   icon: 'checkmark-circle',      step: 0 },
@@ -26,6 +26,40 @@ function formatDate(iso) {
   return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
     + ' · '
     + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatCountdown(ms) {
+  const totalSec = Math.max(0, Math.ceil(ms / 1000));
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function StatusCountdown({ order }) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  if (!order) return null;
+  const { status, remainingMs, nextStatus } = deriveOrderStatus(order, now);
+  if (status === 'received' || status === 'completed' || status === 'cancelled' || !nextStatus) {
+    return null;
+  }
+
+  const nextLabel = STATUS_CONFIG[nextStatus]?.label ?? nextStatus;
+
+  return (
+    <View style={styles.timerCard}>
+      <Ionicons name="time-outline" size={18} color={Colors.primary} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.timerLabel}>Next status: {nextLabel}</Text>
+        <Text style={styles.timerValue}>{formatCountdown(remainingMs)}</Text>
+      </View>
+    </View>
+  );
 }
 
 // ─── Status Badge ──────────────────────────────────────────────────────────────
@@ -70,9 +104,34 @@ function OrderProgress({ status }) {
 }
 
 // ─── Order Detail Modal ───────────────────────────────────────────────────────
-function OrderDetailModal({ order, visible, onClose }) {
+function OrderDetailModal({ orderId, visible, onClose }) {
   const insets = useSafeAreaInsets();
+  const { orders, cancelOrder } = useOrders();
+  const [now, setNow] = useState(Date.now());
+  const [cancelError, setCancelError] = useState('');
+  const order = orders.find((o) => o.id === orderId) ?? null;
+
+  useEffect(() => {
+    if (!visible) return;
+    setCancelError('');
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [visible, orderId]);
+
   if (!order) return null;
+
+  const liveStatus = deriveOrderStatus(order, now).status;
+  const canCancel = liveStatus === 'received' && order.status !== 'cancelled';
+  const showCancel = liveStatus !== 'completed' && liveStatus !== 'cancelled';
+
+  const handleCancel = async () => {
+    if (!canCancel) return;
+    const ok = await cancelOrder(order.id);
+    if (!ok) {
+      setCancelError('This order has been confirmed and can no longer be cancelled.');
+    }
+  };
+
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.detailContainer}>
@@ -95,8 +154,9 @@ function OrderDetailModal({ order, visible, onClose }) {
         <ScrollView style={styles.detailScroll} showsVerticalScrollIndicator={false}>
           <View style={styles.detailCard}>
             <Text style={styles.detailSection}>Order Status</Text>
-            <StatusBadge status={order.status} />
-            <OrderProgress status={order.status} />
+            <StatusBadge status={liveStatus} />
+            <OrderProgress status={liveStatus} />
+            <StatusCountdown order={order} />
           </View>
 
           <View style={styles.detailCard}>
@@ -132,8 +192,30 @@ function OrderDetailModal({ order, visible, onClose }) {
               </View>
             </View>
           )}
-          <View style={{ height: 40 + insets.bottom }} />
+
+          <View style={{ height: 24 }} />
         </ScrollView>
+
+        {showCancel && (
+          <View style={[styles.cancelFooter, { paddingBottom: Math.max(insets.bottom, Spacing.base) }]}>
+            {!!cancelError && <Text style={styles.cancelError}>{cancelError}</Text>}
+            <TouchableOpacity
+              style={[styles.cancelBtn, !canCancel && styles.cancelBtnDisabled]}
+              onPress={handleCancel}
+              disabled={!canCancel}
+              activeOpacity={canCancel ? 0.8 : 1}
+            >
+              <Ionicons
+                name="close-circle-outline"
+                size={18}
+                color={canCancel ? Colors.statusCancelled : Colors.textMuted}
+              />
+              <Text style={[styles.cancelBtnText, !canCancel && styles.cancelBtnTextDisabled]}>
+                {canCancel ? 'Cancel Order' : 'Cancellation unavailable after confirmation'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </Modal>
   );
@@ -150,11 +232,12 @@ function DetailRow({ label, value, bold }) {
 
 // ─── Order Card (Redesigned to match request) ────────────────────────────────
 function OrderCard({ order, onPress }) {
+  const status = deriveOrderStatus(order).status;
   return (
     <TouchableOpacity style={styles.orderCard} onPress={() => onPress(order)} activeOpacity={0.9}>
       <View style={styles.orderCardHeader}>
         <Text style={styles.orderId}>{order.id}</Text>
-        <StatusBadge status={order.status} />
+        <StatusBadge status={status} />
       </View>
       
       <Text style={styles.orderDate}>{formatDate(order.date)}</Text>
@@ -226,7 +309,7 @@ export default function OrdersScreen() {
       )}
 
       <OrderDetailModal
-        order={selectedOrder}
+        orderId={selectedOrder?.id}
         visible={detailVisible}
         onClose={closeDetail}
       />
@@ -368,4 +451,53 @@ const styles = StyleSheet.create({
   detailDivider: { height: 1, backgroundColor: Colors.border, marginVertical: 8 },
   addressRow: { flexDirection: 'row', alignItems: 'flex-start' },
   addressText: { flex: 1, fontSize: 14, color: Colors.textPrimary, lineHeight: 20 },
+  timerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: Spacing.md,
+    backgroundColor: Colors.primaryFade,
+    borderRadius: Radii.md,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  timerLabel: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
+  timerValue: { fontSize: 18, fontWeight: '800', color: Colors.primary, marginTop: 2 },
+  cancelFooter: {
+    paddingHorizontal: Spacing.base,
+    paddingTop: Spacing.md,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  cancelError: {
+    fontSize: 12,
+    color: Colors.statusCancelled,
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+    fontWeight: '600',
+  },
+  cancelBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: Radii.lg,
+    borderWidth: 1.5,
+    borderColor: Colors.statusCancelled,
+    backgroundColor: Colors.white,
+  },
+  cancelBtnDisabled: {
+    borderColor: Colors.border,
+    backgroundColor: Colors.surfaceSecondary,
+  },
+  cancelBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.statusCancelled,
+  },
+  cancelBtnTextDisabled: {
+    color: Colors.textMuted,
+  },
 });
