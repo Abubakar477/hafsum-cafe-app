@@ -60,6 +60,15 @@ export const LOCATIONS = [
     badgeColor: '#492760',
     openTime: '11:00 AM – 11:00 PM',
   },
+  {
+    id: 'bahria-phase-4',
+    area: 'Bahria Phase 4',
+    city: 'Islamabad',
+    address: 'Best Western Central Rawalpindi, Paradise Commercial, Plot 84, Shop 1, Ground Floor Bahria Town, Phase 4, Islamabad',
+    badge: '🏨 Branch',
+    badgeColor: '#492760',
+    openTime: '11:00 AM – 11:00 PM',
+  },
 ];
 
 export default function LocationScreen({ onFinish }) {

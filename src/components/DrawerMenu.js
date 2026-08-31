@@ -28,10 +28,10 @@ const BRANCHES = [
   {
     id: 'b2',
     name: 'Bahria Phase 4',
-    address: 'Best Western Central Rawalpindi, Paradise Commercial, Plot 84, Bahria Phase 4',
+    address: 'Best Western Central Rawalpindi, Paradise Commercial, Plot 84, Shop 1, Ground Floor Bahria Town, Phase 4, Islamabad',
     hours: '11:00 AM – 11:00 PM',
     icon: 'business-outline',
-    mapsQuery: 'Best+Western+Central+Rawalpindi+Bahria+Phase+4',
+    mapsQuery: 'Best+Western+Central+Rawalpindi+Bahria+Phase+4+Islamabad',
   },
 ];
 
