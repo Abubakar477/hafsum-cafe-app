@@ -3,7 +3,8 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MOCK_ORDERS } from '../api/mockData';
 import { triggerOrderNotification } from '../services/notificationService';
-import { syncOrderToFirestore } from '../services/orderService';
+import { db } from '../firebase/config';
+import { collection, addDoc } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 
 const OrdersContext = createContext(null);
