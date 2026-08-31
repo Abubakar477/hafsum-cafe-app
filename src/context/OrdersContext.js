@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MOCK_ORDERS } from '../api/mockData';
 import { triggerOrderNotification } from '../services/notificationService';
 import { db } from '../firebase/config';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 
 const OrdersContext = createContext(null);
@@ -34,6 +34,20 @@ export function deriveOrderStatus(order, now = Date.now()) {
     remainingMs,
     nextStatus: isLast ? null : STATUS_STEPS[stepIndex + 1],
   };
+}
+
+// ─── Sync a single order to Firestore ────────────────────────────────────────
+async function syncOrderToFirestore(order) {
+  try {
+    const cleanOrder = JSON.parse(JSON.stringify(order));
+    if (order.id) {
+      await setDoc(doc(db, 'orders', order.id), cleanOrder, { merge: true });
+    } else {
+      await addDoc(collection(db, 'orders'), cleanOrder);
+    }
+  } catch (e) {
+    console.log('Firestore sync note:', e?.message);
+  }
 }
 
 function applyDerivedStatuses(list, now = Date.now()) {
@@ -76,7 +90,7 @@ export function OrdersProvider({ children }) {
         ordersRef.current = next;
         if (changed) {
           AsyncStorage.setItem(ORDERS_KEY, JSON.stringify(next)).catch(() => {});
-          changedOrders.forEach((order) => syncOrderToFirestore(order, userRef.current));
+          changedOrders.forEach((order) => syncOrderToFirestore(order));
         }
         notifications.forEach((n) => triggerOrderNotification(n));
       })
@@ -86,7 +100,7 @@ export function OrdersProvider({ children }) {
       const { next, notifications, changed, changedOrders } = applyDerivedStatuses(ordersRef.current);
       if (!changed) return;
       persist(next).catch(() => {});
-      changedOrders.forEach((order) => syncOrderToFirestore(order, userRef.current));
+      changedOrders.forEach((order) => syncOrderToFirestore(order));
       notifications.forEach((n) => triggerOrderNotification(n));
     }, 1000);
 
@@ -123,7 +137,8 @@ export function OrdersProvider({ children }) {
     };
     const updated = [newOrder, ...ordersRef.current];
     await persist(updated);
-    syncOrderToFirestore(newOrder, currentUser);
+    syncOrderToFirestore(newOrder);
+    triggerOrderNotification({ orderId, status: 'received', total });
     return newOrder;
   };
 
@@ -143,7 +158,7 @@ export function OrdersProvider({ children }) {
     ordersRef.current = updated;
     setOrders(updated);
     await AsyncStorage.setItem(ORDERS_KEY, JSON.stringify(updated));
-    await syncOrderToFirestore(cancelledOrder, userRef.current);
+    await syncOrderToFirestore(cancelledOrder);
     return true;
   }, []);
 

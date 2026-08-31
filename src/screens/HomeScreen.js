@@ -203,7 +203,7 @@ function SizeSelectionModal({ visible, product, onClose, onConfirm }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // HOME SCREEN
 // ─────────────────────────────────────────────────────────────────────────────
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation, onOpenDrawer }) {
   const insets = useSafeAreaInsets();
   const { dispatch, itemCount } = useCart();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
@@ -255,30 +255,19 @@ export default function HomeScreen({ navigation }) {
         style={[styles.header, { paddingTop: insets.top + 10 }]}
       >
         <View style={styles.headerRow}>
-          {/* Left Column containing Location Selector & Logo */}
-          <View style={styles.headerLeftCol}>
-            {/* Branch Selector Dropdown */}
-            <TouchableOpacity
-              onPress={() => setDropdownVisible(true)}
-              style={styles.dropdownBtn}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="location" size={14} color="#C9963A" style={{ marginRight: 4 }} />
-              <Text style={styles.dropdownBtnText}>
-                {selectedLocation ? selectedLocation.area : 'Select Branch'}
-              </Text>
-              <Ionicons name="chevron-down" size={12} color={WHITE} style={{ marginLeft: 4 }} />
-            </TouchableOpacity>
+          {/* ☰ Hamburger Button — opens Left Drawer */}
+          <TouchableOpacity onPress={onOpenDrawer} style={styles.hamburgerBtn} activeOpacity={0.75}>
+            <Ionicons name="menu" size={28} color={WHITE} />
+          </TouchableOpacity>
 
-            {/* Logo in the Left Corner */}
-            <Image
-              source={require('../../assets/images/topheaderlogo.jpeg')}
-              style={styles.cornerLogo}
-              resizeMode="contain"
-            />
-          </View>
+          {/* Logo Center */}
+          <Image
+            source={require('../../assets/images/topheaderlogo.jpeg')}
+            style={styles.cornerLogo}
+            resizeMode="contain"
+          />
 
-          {/* Cart Icon in the Right Corner */}
+          {/* Cart Icon Right */}
           <TouchableOpacity onPress={() => navigation.navigate('Cart')} activeOpacity={0.8}>
             <View style={styles.bagIconWrap}>
               <Ionicons name="bag-outline" size={24} color={WHITE} />
@@ -411,6 +400,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  hamburgerBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
   cornerLogo: {
     width: 160,
